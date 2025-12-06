@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulation M-LEV - Bilan & Cycles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #0f172a; color: white; }
+        canvas { display: block; }
+        .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
+        /* Scrollbar custom */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        
+        /* Input number custom arrows */
+        input[type=number]::-webkit-inner-spin-button { opacity: 1; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center shrink-0 shadow-lg z-20">
+        <div>
+            <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2">
+                <span class="inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
+                SIMULATION M-LEV
+                <span class="text-slate-400 text-sm font-normal">| Système Complet</span>
+            </h1>
+        </div>
+        <div class="text-right">
+            <div class="text-xs text-slate-400">Configuration Active</div>
+            <div class="text-xs font-mono text-blue-300">ROTOR 400mm | STATOR MODULAIRE | FOC</div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar: Configuration -->
+        <div class="w-80 bg-slate-800 flex flex-col border-r border-slate-700 shrink-0 z-10 shadow-xl overflow-y-auto">
+            
+            <div class="p-5 flex-1">
+                <h2 class="text-xs font-bold text-blue-400 uppercase mb-4 tracking-wider border-b border-slate-600 pb-2">1. Mission & Cycle</h2>
+                
+                <div class="space-y-4 mb-6">
+                    <!-- Mode de Mission -->
+                    <div>
+                        <label class="block text-xs text-slate-300 mb-2 font-semibold">Type de Cycle</label>
+                        <div class="flex bg-slate-700 rounded p-1">
+                            <button id="btn_up" onclick="setMission('up')" class="flex-1 py-1 text-xs font-bold rounded bg-blue-600 text-white shadow transition">MONTÉE</button>
+                            <button id="btn_updown" onclick="setMission('up_down')" class="flex-1 py-1 text-xs font-bold rounded text-slate-300 hover:text-white transition">ALLER-RETOUR</button>
+                        </div>
+                        <input type="hidden" id="mission_type" value="up">
+                    </div>
+
+                    <!-- Pause input (Hidden by default) -->
+                    <div id="pause_container" class="hidden bg-slate-700/30 p-2 rounded border border-slate-600">
+                        <label class="block text-xs text-yellow-400 mb-1 font-bold">Temps de Pause (s)</label>
+                        <input type="number" id="t_pause" value="5.0" step="0.5" class="w-full bg-slate-900 border border-slate-500 rounded p-1 text-sm text-white focus:border-yellow-500 outline-none text-right">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Masse Totale (kg)</label>
+                        <input type="number" id="m_tot" value="2200" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-blue-500 outline-none transition text-right">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">Hauteur Cible (m)</label>
+                        <input type="number" id="h_target" value="50" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-blue-500 outline-none transition text-right">
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Vitesse (m/s)</label>
+                            <input type="number" id="v_target" value="10" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-blue-500 outline-none transition text-right">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Accél. (m/s²)</label>
+                            <input type="number" id="a_target" value="1.2" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-sm text-white focus:border-blue-500 outline-none transition text-right">
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="text-xs font-bold text-blue-400 uppercase mb-4 tracking-wider border-b border-slate-600 pb-2">2. Hardware & Dimensions</h2>
+                <div class="bg-slate-900/50 rounded p-3 text-xs space-y-2 font-mono border border-slate-700">
+                    <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] text-slate-400 mb-2 border-b border-slate-700 pb-2">
+                        <span>Rotor Côté:</span> <span class="text-slate-200 text-right">400 mm</span>
+                        <span>Stator Pas:</span> <span class="text-slate-200 text-right">375 mm</span>
+                        <span>Bobine H:</span> <span class="text-slate-200 text-right">300 mm</span>
+                        <span>Entrefer:</span> <span class="text-slate-200 text-right">2.0 mm</span>
+                    </div>
+
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Courant Nominal:</span>
+                        <span class="text-yellow-400 font-bold">5.73 A</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Résistance Bobine:</span>
+                        <span class="text-slate-200">5.87 Ω</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Constante EMF:</span>
+                        <span class="text-slate-200">45 V/m/s</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-slate-400">Pertes Fixes:</span>
+                        <span class="text-slate-200">2.32 kW</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-900 border-t border-slate-700 mt-auto">
+                 <button onclick="checkFeasibility()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 rounded shadow-lg transition transform active:scale-95 border border-blue-500/30">
+                    LANCER SIMULATION
+                </button>
+                <!-- Status -->
+                <div id="statusBox" class="hidden mt-3 text-center text-xs font-bold transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <!-- Center: Visualisation 2D -->
+        <div class="flex-1 bg-black relative border-r border-slate-700 overflow-hidden">
+            <div class="absolute top-4 left-4 z-10 pointer-events-none">
+                <div class="bg-slate-900/90 backdrop-blur border border-slate-700 p-3 rounded shadow-xl">
+                    <h3 class="text-xs font-bold text-blue-400 mb-1">VISUALISATION TEMPS RÉEL</h3>
+                    <div class="text-[10px] text-slate-400 font-mono">
+                        Y: <span id="disp_y" class="text-white text-lg font-bold">0.00</span> m<br>
+                        V: <span id="disp_v" class="text-white">0.00</span> m/s
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicateur Régénération -->
+            <div id="regenIndicator" class="absolute top-4 right-4 z-10 hidden transition-opacity duration-300">
+                <div class="bg-green-900/90 backdrop-blur border border-green-500 p-2 rounded shadow-xl flex items-center gap-2">
+                    <div class="w-2 h-2 bg-green-400 rounded-full animate-ping"></div>
+                    <span class="text-xs font-bold text-green-400">RÉGÉNÉRATION ACTIVE</span>
+                </div>
+            </div>
+
+            <canvas id="visuCanvas" class="w-full h-full block"></canvas>
+        </div>
+
+        <!-- Right: Charts (3 sections) -->
+        <div class="w-[420px] flex flex-col bg-slate-800 border-l border-slate-700 shrink-0">
+            
+            <!-- Chart 1: Cinématique -->
+            <div class="h-1/3 p-2 border-b border-slate-700 flex flex-col relative">
+                <h3 class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
+                    <span>CINÉMATIQUE</span>
+                    <span class="text-[10px] bg-slate-700 px-1 rounded text-white">Pos / Vit / Acc</span>
+                </h3>
+                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded border border-slate-700/50 p-1">
+                    <canvas id="kineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Elec -->
+            <div class="h-1/3 p-2 border-b border-slate-700 flex flex-col relative">
+                <h3 class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
+                    <span>ÉLECTRIQUE</span>
+                    <span class="text-[10px] bg-slate-700 px-1 rounded text-white">U & I</span>
+                </h3>
+                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded border border-slate-700/50 p-1">
+                    <canvas id="elecChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: Energy -->
+            <div class="h-1/3 p-2 flex flex-col relative">
+                <h3 class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
+                    <span>BILAN ÉNERGIE (CUMUL)</span>
+                    <span class="text-[10px] bg-slate-700 px-1 rounded text-white">kWh</span>
+                </h3>
+                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded border border-slate-700/50 p-1">
+                    <canvas id="nrgChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal Rapport -->
+    <div id="reportModal" class="fixed inset-0 modal z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all scale-100">
+            <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center">
+                <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    BILAN DE CYCLE COMPLET
+                </h2>
+                <button onclick="closeReport()" class="text-slate-400 hover:text-white">&times;</button>
+            </div>
+            
+            <div class="p-6 grid grid-cols-2 gap-6">
+                <!-- Col 1: Mission & Perf -->
+                <div class="space-y-4">
+                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider border-b border-slate-700 pb-1">Performance Mission</h3>
+                    <div class="space-y-2 text-sm">
+                         <div class="flex justify-between"><span>Temps Total:</span> <span id="rep_t" class="font-mono text-white">-- s</span></div>
+                         <div class="flex justify-between"><span>Hauteur Max:</span> <span id="rep_h" class="font-mono text-white">-- m</span></div>
+                         <div class="flex justify-between"><span>Vitesse Pic:</span> <span id="rep_v" class="font-mono text-white">-- m/s</span></div>
+                         <div class="flex justify-between"><span>Accél Max:</span> <span id="rep_a" class="font-mono text-white">-- m/s²</span></div>
+                    </div>
+
+                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider border-b border-slate-700 pb-1 mt-4">Hardware Utilisé</h3>
+                    <div class="space-y-2 text-sm">
+                         <div class="flex justify-between"><span>Courant Nominal:</span> <span class="font-mono text-yellow-400">5.73 A</span></div>
+                         <div class="flex justify-between"><span>Tension Commande Max:</span> <span id="rep_u_max" class="font-mono text-blue-300">-- V</span></div>
+                    </div>
+                </div>
+
+                <!-- Col 2: Énergie -->
+                <div class="space-y-4 bg-slate-900/50 p-4 rounded border border-slate-700">
+                    <h3 class="text-xs font-bold text-green-500 uppercase tracking-wider border-b border-slate-700 pb-1">Bilan Énergétique</h3>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 text-sm">Conso. Totale</span>
+                        <span id="rep_e_cons" class="text-xl font-bold text-white">-- kWh</span>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-400 text-sm">Régénération</span>
+                        <span id="rep_e_regen" class="text-lg font-bold text-green-400">-- kWh</span>
+                    </div>
+
+                    <div class="flex justify-between items-center text-xs text-red-400 mt-1">
+                        <span>Pertes (Chaleur)</span>
+                        <span id="rep_e_loss">-- kWh</span>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-600">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-bold text-slate-300">% Régénération</span>
+                            <span id="rep_pct_regen" class="bg-green-600 text-white px-2 py-1 rounded text-sm font-bold">-- %</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-sm font-bold text-slate-300">Rendement Global</span>
+                            <span id="rep_efficacite" class="bg-blue-600 text-white px-2 py-1 rounded text-sm font-bold">-- %</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-1 text-right italic">(1 - Pertes/Conso)</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-slate-900 p-4 border-t border-slate-700">
+                <button onclick="closeReport()" class="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded font-bold transition">Fermer le rapport</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // CONFIGURATION HARDWARE
+        // ==========================================
+        const HARDWARE = {
+            rotor: {
+                cote: 0.400,      // m
+                hauteur: 0.400 * Math.sqrt(3) / 2,
+                ratio_rot: 1.2    // m/tour
+            },
+            stator: {
+                h_bobine: 0.300,
+                w_bobine: 0.170,
+                pas: 0.375,
+                ecart: 0.404
+            },
+            elec: {
+                f_max: 39240,     // N
+                r_phase: 5.87,    // Ohm
+                k_emf: 45,        // V/m/s
+                p_fixes: 2320,    // W
+                i_nom: 5.73       // A
+            }
+        };
+
+        let simState = {
+            running: false,
+            data: {},
+            missionType: 'up'
+        };
+        let charts = {};
+        let animId;
+
+        // ==========================================
+        // UI INTERACTION
+        // ==========================================
+        function setMission(type) {
+            simState.missionType = type;
+            document.getElementById('mission_type').value = type;
+            
+            const btnUp = document.getElementById('btn_up');
+            const btnUpDown = document.getElementById('btn_updown');
+            const pauseContainer = document.getElementById('pause_container');
+            
+            if(type === 'up') {
+                btnUp.className = "flex-1 py-1 text-xs font-bold rounded bg-blue-600 text-white shadow transition";
+                btnUpDown.className = "flex-1 py-1 text-xs font-bold rounded text-slate-300 hover:text-white transition";
+                pauseContainer.classList.add('hidden');
+            } else {
+                btnUp.className = "flex-1 py-1 text-xs font-bold rounded text-slate-300 hover:text-white transition";
+                btnUpDown.className = "flex-1 py-1 text-xs font-bold rounded bg-blue-600 text-white shadow transition";
+                pauseContainer.classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // CHARTS SETUP
+        // ==========================================
+        function initCharts() {
+            Chart.defaults.color = '#64748b';
+            Chart.defaults.borderColor = '#334155';
+            
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                elements: { point: { radius: 0 } },
+                plugins: { legend: { display: true, labels: { color: '#94a3b8', boxWidth: 8, font: {size: 9} } } },
+                scales: {
+                    x: { display: false },
+                    y: { grid: { color: '#1e293b' }, ticks: { font: {size: 9} } }
+                }
+            };
+
+            // 1. Kinematics Chart (Pos, Vel, Acc)
+            charts.kine = new Chart(document.getElementById('kineChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Pos (m)', data: [], borderColor: '#3b82f6', borderWidth: 1.5, yAxisID: 'y' },
+                    { label: 'Vit (m/s)', data: [], borderColor: '#22c55e', borderWidth: 1.5, yAxisID: 'y1' },
+                    // Accel on secondary axis but usually small scale compared to others or just visual
+                    { label: 'Acc (m/s²)', data: [], borderColor: '#eab308', borderWidth: 1, borderDash: [2,2], yAxisID: 'y1' }
+                ]},
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        x: { display: false },
+                        y: { position: 'left', title: {display: false} },
+                        y1: { position: 'right', grid: {drawOnChartArea: false} }
+                    }
+                }
+            });
+
+            // 2. Elec Chart
+            charts.elec = new Chart(document.getElementById('elecChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'U (V)', data: [], borderColor: '#38bdf8', borderWidth: 1.5, yAxisID: 'y' },
+                    { label: 'I (A)', data: [], borderColor: '#f472b6', borderWidth: 1.5, yAxisID: 'y1' }
+                ]},
+                options: {
+                    ...commonOptions,
+                    scales: {
+                        x: { display: false },
+                        y: { position: 'left' },
+                        y1: { position: 'right', grid: {drawOnChartArea: false} }
+                    }
+                }
+            });
+
+            // 3. Energy Chart (Consumed vs Regen Cumulative)
+            charts.nrg = new Chart(document.getElementById('nrgChart'), {
+                type: 'line',
+                data: { labels: [], datasets: [
+                    { label: 'Conso Cumul (kWh)', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, borderWidth: 1.5 },
+                    { label: 'Regen Cumul (kWh)', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, borderWidth: 1.5 }
+                ]},
+                options: {
+                    ...commonOptions,
+                    plugins: { legend: { display: true, labels: { boxWidth: 8, font: {size: 9} } } },
+                    scales: {
+                        x: { display: true, ticks: { maxTicksLimit: 5 } },
+                        y: { title: {display: true, text: 'kWh'} }
+                    }
+                }
+            });
+        }
+
+        // ==========================================
+        // PHYSIQUE & SIMULATION
+        // ==========================================
+        function checkFeasibility() {
+            const m = parseFloat(document.getElementById('m_tot').value);
+            const a = parseFloat(document.getElementById('a_target').value);
+            
+            const f_req = m * (9.81 + a);
+            const statusBox = document.getElementById('statusBox');
+
+            if (f_req > HARDWARE.elec.f_max) {
+                statusBox.className = "mt-3 p-2 text-center text-xs font-bold rounded bg-red-900/50 text-red-300 border border-red-500/50";
+                statusBox.innerHTML = `⚠️ NON FAISABLE: Force ${f_req.toFixed(0)}N > Max ${HARDWARE.elec.f_max}N`;
+                statusBox.classList.remove('hidden');
+                return;
+            }
+
+            statusBox.className = "mt-3 p-2 text-center text-xs font-bold rounded bg-green-900/50 text-green-300 border border-green-500/50";
+            statusBox.innerHTML = `✅ SYSTÈME VALIDE: Marge ${(100*(HARDWARE.elec.f_max/f_req - 1)).toFixed(0)}%`;
+            statusBox.classList.remove('hidden');
+
+            runSimulation();
+        }
+
+        function runSimulation() {
+            const m = parseFloat(document.getElementById('m_tot').value);
+            const h = parseFloat(document.getElementById('h_target').value);
+            const v_lim = parseFloat(document.getElementById('v_target').value);
+            const a_lim = parseFloat(document.getElementById('a_target').value);
+            const type = simState.missionType;
+            const t_pause_input = (type === 'up_down') ? parseFloat(document.getElementById('t_pause').value) : 0;
+
+            // 1. Profil Temporel
+            let t_acc = v_lim / a_lim;
+            let d_acc = 0.5 * a_lim * t_acc**2;
+            let v_peak = v_lim;
+            let t_cruise = 0;
+
+            if (2*d_acc > h) {
+                d_acc = h/2;
+                t_acc = Math.sqrt(2*d_acc/a_lim);
+                v_peak = a_lim * t_acc;
+                t_cruise = 0;
+            } else {
+                t_cruise = (h - 2*d_acc) / v_peak;
+            }
+            
+            const t_up_total = 2*t_acc + t_cruise;
+            const t_wait = t_pause_input; 
+            
+            // Calcul temps total théorique avec marge
+            const t_cycle_end = (type === 'up') ? t_up_total : (t_up_total + t_wait + t_up_total);
+            const t_max_sim = t_cycle_end + 2.0; // Buffer de 2s après fin théorique
+
+            // Simulation Loop
+            const dt = 0.05;
+            let t = 0;
+            let y = 0;
+            let v = 0;
+
+            // Data storage
+            let data = {
+                t: [], y: [], v: [], a: [],
+                u: [], i: [], 
+                e_cons_cumul: [], e_regen_cumul: [],
+                e_cons_total: 0, e_regen_total: 0, e_loss_total: 0
+            };
+
+            let running = true;
+            let current_e_cons = 0;
+            let current_e_regen = 0;
+            
+            while(running) {
+                let a = 0;
+                
+                // --- STATE MACHINE ---
+                if (t <= t_acc) {
+                    a = a_lim; // Accel UP
+                } else if (t <= t_acc + t_cruise) {
+                    a = 0; // Cruise UP
+                } else if (t <= t_up_total) {
+                    a = -a_lim; // Decel UP
+                } else if (t <= t_up_total + t_wait) {
+                    a = 0; v = 0; y = h; // Wait at Top
+                } else {
+                    // Descente (ou fin si mode Up)
+                    if (type === 'up') {
+                         a = 0; v = 0; y = h; 
+                    } else {
+                        const t_down = t - (t_up_total + t_wait);
+                        if (t_down <= t_acc) {
+                            a = -a_lim; // Accel DOWN (neg)
+                        } else if (t_down <= t_acc + t_cruise) {
+                            a = 0; // Cruise DOWN
+                        } else if (t_down <= t_up_total) {
+                            a = a_lim; // Decel DOWN
+                        } else {
+                            a = 0; v = 0; y = 0; // Ground Wait
+                        }
+                    }
+                }
+
+                // Physique
+                v += a * dt;
+                y += v * dt;
+                
+                // Clamp Sol & Anti-rebond
+                if (y <= 0) { 
+                    y = 0; 
+                    // Si on est censé freiner en bas (a > 0), ne pas créer de vitesse positive
+                    if (v < 0 || (a > 0 && t > t_up_total + t_wait)) v = 0; 
+                }
+                
+                // Clamp Plafond (juste au cas où)
+                if (type === 'up' && t > t_up_total && y > h) { y = h; v = 0; }
+
+                // Elec (calculé seulement si v ou a non nuls, ou maintenance)
+                let F_mot = m * (9.81 + a);
+                // Si posé au sol et à l'arrêt, force moteur nulle (on coupe)
+                if (y <= 0.001 && Math.abs(v) < 0.01 && t > t_up_total + t_wait) F_mot = 0;
+
+                let I_req = F_mot / (HARDWARE.elec.f_max / 6.43);
+                if (I_req < 0) I_req = 0; 
+
+                let E_bemf = HARDWARE.elec.k_emf * v; 
+                let U_req = (HARDWARE.elec.r_phase * I_req) + E_bemf;
+
+                let P_joule = (HARDWARE.elec.r_phase * I_req**2 * 6) / 1000; 
+                let P_meca = (F_mot * v) / 1000; 
+                let P_fixes = (F_mot > 0) ? (HARDWARE.elec.p_fixes / 1000) : 0; // Pertes fixes seulement si actif
+                let P_elec = P_meca + P_joule + P_fixes;
+
+                // Energy Step
+                let dE = P_elec * dt / 3600; 
+                let dE_joule = P_joule * dt / 3600;
+                
+                if (P_elec > 0) {
+                    data.e_cons_total += dE;
+                    current_e_cons += dE;
+                } else {
+                    data.e_regen_total += Math.abs(dE);
+                    current_e_regen += Math.abs(dE);
+                }
+                data.e_loss_total += dE_joule + (P_fixes * dt / 3600);
+
+                // Store
+                data.t.push(t);
+                data.y.push(y);
+                data.v.push(v);
+                data.a.push(a);
+                data.u.push(U_req);
+                data.i.push(I_req);
+                data.e_cons_cumul.push(current_e_cons);
+                data.e_regen_cumul.push(current_e_regen);
+
+                t += dt;
+                // Arrêt simulation : soit temps buffer écoulé, soit timeout sécurité (300s)
+                if (t > t_max_sim || t > 300) running = false;
+            }
+
+            simState.data = data;
+            startVisuals();
+        }
+
+        // ==========================================
+        // VISUALISATION & RAPPORT
+        // ==========================================
+        function startVisuals() {
+            if (animId) cancelAnimationFrame(animId);
+            
+            const canvas = document.getElementById('visuCanvas');
+            const ctx = canvas.getContext('2d');
+            const d = simState.data;
+            let idx = 0;
+            
+            // Reset Charts
+            charts.kine.data.labels = [];
+            charts.kine.data.datasets.forEach(ds => ds.data = []);
+            charts.elec.data.labels = [];
+            charts.elec.data.datasets.forEach(ds => ds.data = []);
+            charts.nrg.data.labels = [];
+            charts.nrg.data.datasets.forEach(ds => ds.data = []);
+
+            const max_h = parseFloat(document.getElementById('h_target').value);
+
+            function loop() {
+                if (idx >= d.t.length) {
+                    showFinalReport();
+                    return;
+                }
+
+                // Canvas
+                canvas.width = canvas.parentElement.offsetWidth;
+                canvas.height = canvas.parentElement.offsetHeight;
+                
+                const y = d.y[idx];
+                
+                drawSystem(ctx, canvas.width, canvas.height, y, max_h);
+
+                document.getElementById('disp_y').innerText = y.toFixed(2);
+                document.getElementById('disp_v').innerText = d.v[idx].toFixed(2);
+                
+                const regInd = document.getElementById('regenIndicator');
+                // Simple detection: if Regen cumulative increased in this step
+                const isRegen = (idx > 0 && d.e_regen_cumul[idx] > d.e_regen_cumul[idx-1]);
+                if (isRegen) regInd.classList.remove('hidden');
+                else regInd.classList.add('hidden');
+
+                // Charts Throttling
+                if (idx % 3 === 0) {
+                    const t_lbl = d.t[idx].toFixed(1);
+                    
+                    // Kinematics
+                    charts.kine.data.labels.push(t_lbl);
+                    charts.kine.data.datasets[0].data.push(d.y[idx]);
+                    charts.kine.data.datasets[1].data.push(d.v[idx]);
+                    charts.kine.data.datasets[2].data.push(d.a[idx]);
+                    
+                    // Elec
+                    charts.elec.data.labels.push(t_lbl);
+                    charts.elec.data.datasets[0].data.push(d.u[idx]);
+                    charts.elec.data.datasets[1].data.push(d.i[idx]);
+
+                    // Energy
+                    charts.nrg.data.labels.push(t_lbl);
+                    charts.nrg.data.datasets[0].data.push(d.e_cons_cumul[idx]);
+                    charts.nrg.data.datasets[1].data.push(d.e_regen_cumul[idx]);
+
+                    charts.kine.update('none');
+                    charts.elec.update('none');
+                    charts.nrg.update('none');
+                }
+
+                idx++;
+                animId = requestAnimationFrame(loop);
+            }
+            animId = requestAnimationFrame(loop);
+        }
+
+        function drawSystem(ctx, w, h, y_sim, h_target) {
+            const scale = h / 4;
+            const cx = w / 2;
+            const cy = h / 2;
+            let cam_y = y_sim;
+            function worldToScreen(wy) { return cy + (cam_y - wy) * scale; }
+
+            // Grid
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            for(let i=0; i<w; i+=50) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
+            for(let i=0; i<h; i+=50) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
+            ctx.stroke();
+
+            // Bobines
+            const nb_coils = Math.ceil(h_target / HARDWARE.stator.pas) + 5;
+            for(let i=-2; i<nb_coils; i++) {
+                const wy = i * HARDWARE.stator.pas;
+                const sy = worldToScreen(wy);
+                if (sy > -100 && sy < h+100) {
+                    const dist = Math.abs(wy - y_sim);
+                    let active = dist < (HARDWARE.rotor.hauteur * 1.5);
+                    let color = active ? '#3b82f6' : '#334155';
+                    if (dist < 0.1) color = '#facc15';
+                    
+                    ctx.fillStyle = color;
+                    const bw = HARDWARE.stator.w_bobine * scale;
+                    const bh = HARDWARE.stator.h_bobine * scale;
+                    const gap = HARDWARE.stator.ecart * scale;
+                    ctx.fillRect(cx - gap/2 - bw, sy - bh/2, bw, bh);
+                    ctx.fillRect(cx + gap/2, sy - bh/2, bw, bh);
+                }
+            }
+
+            // Rotor
+            const theta = (y_sim / HARDWARE.rotor.ratio_rot) * 2 * Math.PI;
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.rotate(theta);
+            
+            const r_circ = HARDWARE.rotor.cote / Math.sqrt(3);
+            const side = HARDWARE.rotor.cote;
+            const s = side * scale;
+            const rc = r_circ * scale;
+            
+            ctx.beginPath();
+            ctx.moveTo(0, -rc);
+            ctx.lineTo(s/2, rc/2);
+            ctx.lineTo(-s/2, rc/2);
+            ctx.closePath();
+            
+            const grd = ctx.createLinearGradient(-s/2, -rc, s/2, rc);
+            grd.addColorStop(0, '#60a5fa');
+            grd.addColorStop(1, '#2563eb');
+            ctx.fillStyle = grd;
+            ctx.fill();
+            
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath(); ctx.arc(0, -rc, s*0.1, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(s/2, rc/2, s*0.1, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(-s/2, rc/2, s*0.1, 0, Math.PI*2); ctx.fill();
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(0, 0, s*0.05, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+        function showFinalReport() {
+            const d = simState.data;
+            const last = d.t.length - 1;
+            
+            document.getElementById('rep_t').innerText = d.t[last].toFixed(1) + " s";
+            document.getElementById('rep_h').innerText = Math.max(...d.y).toFixed(1) + " m";
+            document.getElementById('rep_v').innerText = Math.max(...d.v).toFixed(1) + " m/s";
+            document.getElementById('rep_a').innerText = Math.max(...d.a).toFixed(1) + " m/s²";
+            
+            document.getElementById('rep_e_cons').innerText = d.e_cons_total.toFixed(3) + " kWh";
+            document.getElementById('rep_e_loss').innerText = d.e_loss_total.toFixed(3) + " kWh";
+            document.getElementById('rep_e_regen').innerText = d.e_regen_total.toFixed(3) + " kWh";
+            
+            const pct = (d.e_cons_total > 0) ? (d.e_regen_total / d.e_cons_total * 100) : 0;
+            document.getElementById('rep_pct_regen').innerText = pct.toFixed(1) + " %";
+
+            // Calcul Efficacité/Rendement Global
+            const eff = (d.e_cons_total > 0) ? (1 - (d.e_loss_total / d.e_cons_total)) * 100 : 0;
+            document.getElementById('rep_efficacite').innerText = eff.toFixed(1) + " %";
+            
+            document.getElementById('rep_u_max').innerText = Math.max(...d.u).toFixed(0) + " V";
+
+            document.getElementById('reportModal').classList.remove('hidden');
+        }
+
+        function closeReport() {
+            document.getElementById('reportModal').classList.add('hidden');
+        }
+
+        window.onload = initCharts;
+    </script>
+</body>
+</html>
