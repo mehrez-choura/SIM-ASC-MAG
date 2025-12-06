@@ -16,7 +16,7 @@ Simply open `index.html` in your web browser.
 1. Install the "Live Server" extension in VS Code.
 2. Right-click `index.html` and select "Open with Live Server".
 
-## Deployment
+## Deployment 
 
 This project is configured to automatically deploy to GitHub Pages when you push to the `main` branch.
 
