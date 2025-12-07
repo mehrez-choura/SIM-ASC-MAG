@@ -3,13 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulation M-LEV - Commande Fluide (S-Curve)</title>
+    <title>Simulation Ascenseur Magnétique</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #0f172a; color: white; }
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+            background-color: #0f172a; 
+            color: white; 
+        }
         canvas { display: block; }
-        .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); }
+        .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
+        
         /* Scrollbar custom */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #1e293b; }
@@ -19,21 +25,72 @@
         /* Input number custom arrows */
         input[type=number]::-webkit-inner-spin-button { opacity: 1; }
         
-        /* Style unifié pour les inputs */
-        .input-group { margin-bottom: 0.75rem; }
+        /* Style amélioré pour les inputs */
+        .input-group { 
+            margin-bottom: 1rem; 
+            position: relative;
+        }
+        
         .input-field { 
             width: 100%; 
-            background-color: #1e293b; /* Slate 800 */
-            border: 1px solid #475569; 
-            border-radius: 0.375rem; 
-            padding: 0.5rem; 
-            font-size: 0.875rem; 
-            color: white; 
+            background-color: rgba(30, 41, 59, 0.6); /* Slate 800 semi-transparent */
+            border: 1px solid #334155; 
+            border-radius: 0.5rem; 
+            padding: 0.5rem 0.75rem; 
+            font-size: 0.85rem; 
+            font-weight: 500;
+            color: #f1f5f9; 
             text-align: right;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
         }
-        .input-field:focus { border-color: #3b82f6; outline: none; ring: 2px solid rgba(59, 130, 246, 0.3); }
-        .input-label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.25rem; }
+        
+        .input-field:focus { 
+            border-color: #60a5fa; /* Blue 400 */
+            outline: none; 
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15); 
+            background-color: rgba(30, 41, 59, 0.9);
+        }
+        
+        .input-label { 
+            display: block; 
+            font-size: 0.7rem; 
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8; 
+            margin-bottom: 0.35rem; 
+            font-weight: 600;
+        }
+
+        /* Style pour les blocs Hardware "Read-only" */
+        .hardware-block {
+            background-color: rgba(30, 41, 59, 0.4);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .hardware-title {
+            color: #93c5fd; /* Blue 300 */
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+            padding-bottom: 0.25rem;
+            margin-bottom: 0.5rem;
+        }
+        .spec-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; /* Alignement haut pour texte long */
+            font-size: 0.75rem; /* Slightly smaller to fit */
+            margin-bottom: 0.35rem;
+            line-height: 1.2;
+        }
+        .spec-label { color: #cbd5e1; min-width: 40%; }
+        .spec-value { color: #fff; font-family: 'ui-monospace', 'SFMono-Regular', Menlo, monospace; text-align: right; }
+        .tech-note { display: block; font-size: 0.65rem; color: #64748b; font-style: italic; margin-top: 2px; }
+        
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -41,15 +98,14 @@
     <!-- Header -->
     <header class="bg-slate-900 border-b border-slate-700 p-4 flex justify-between items-center shrink-0 shadow-lg z-20">
         <div>
-            <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2">
-                <span class="inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse"></span>
-                SIMULATION M-LEV
-                <span class="text-slate-400 text-sm font-normal">| Commande S-Curve (Fluide)</span>
+            <h1 class="text-xl font-bold text-blue-400 flex items-center gap-2 tracking-tight">
+                <span class="inline-block w-3 h-3 bg-green-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
+                SIMULATION ASCENSEUR MAGNÉTIQUE
             </h1>
         </div>
         <div class="text-right">
-            <div class="text-xs text-slate-400">Configuration Active</div>
-            <div class="text-xs font-mono text-blue-300">ROTOR 400mm | STATOR MODULAIRE | FOC</div>
+            <div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">État du Système</div>
+            <div class="text-xs font-mono text-blue-300 font-bold">PRÊT À SIMULER</div>
         </div>
     </header>
 
@@ -57,26 +113,31 @@
     <div class="flex-1 flex overflow-hidden">
         
         <!-- Sidebar: Configuration -->
-        <div class="w-80 bg-slate-800 flex flex-col border-r border-slate-700 shrink-0 z-10 shadow-xl overflow-y-auto">
+        <!-- CHANGEMENT: Largeur réduite de w-96 à w-80 pour laisser plus de place au centre -->
+        <div class="w-80 bg-slate-800 flex flex-col border-r border-slate-700 shrink-0 z-10 shadow-2xl overflow-y-auto custom-scrollbar">
             
             <div class="p-5 flex-1">
-                <h2 class="text-xs font-bold text-blue-400 uppercase mb-4 tracking-wider border-b border-slate-600 pb-2">1. Mission & Cycle</h2>
+                <h2 class="text-xs font-bold text-blue-400 uppercase mb-5 tracking-widest border-b border-blue-500/30 pb-2">
+                    1. Données de Simulation
+                </h2>
                 
-                <div class="space-y-4 mb-6">
+                <div class="space-y-5 mb-8">
                     <!-- Mode de Mission -->
                     <div>
-                        <label class="input-label font-semibold text-slate-300">Type de Cycle</label>
-                        <div class="flex bg-slate-700 rounded p-1">
-                            <button id="btn_up" onclick="setMission('up')" class="flex-1 py-1 text-xs font-bold rounded bg-blue-600 text-white shadow transition">MONTÉE</button>
-                            <button id="btn_updown" onclick="setMission('up_down')" class="flex-1 py-1 text-xs font-bold rounded text-slate-300 hover:text-white transition">ALLER-RETOUR</button>
+                        <label class="input-label">Type de Cycle</label>
+                        <div class="flex bg-slate-900/50 rounded-lg p-1 border border-slate-700">
+                            <button id="btn_up" onclick="setMission('up')" class="flex-1 py-1.5 text-xs font-bold rounded-md bg-blue-600 text-white shadow-md transition-all duration-200">MONTÉE</button>
+                            <button id="btn_updown" onclick="setMission('up_down')" class="flex-1 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all duration-200">ALLER-RETOUR</button>
                         </div>
                         <input type="hidden" id="mission_type" value="up">
                     </div>
 
-                    <!-- Pause input (Hidden by default) -->
-                    <div id="pause_container" class="hidden bg-slate-700/30 p-2 rounded border border-slate-600 mb-2">
-                        <label class="block text-xs text-red-400 mb-1 font-bold">Temps de Pause (s)</label>
-                        <input type="number" id="t_pause" value="5.0" step="0.5" class="w-full bg-slate-900 border border-slate-500 rounded p-1 text-sm text-white focus:border-red-500 outline-none text-right">
+                    <!-- Pause input -->
+                    <div id="pause_container" class="hidden transition-all duration-300">
+                        <div class="input-group">
+                            <label class="input-label text-red-400">Temps de Pause (s)</label>
+                            <input type="number" id="t_pause" value="5.0" step="0.5" class="input-field border-red-900/50 focus:border-red-500 focus:shadow-[0_0_0_3px_rgba(239,68,68,0.15)] bg-red-900/10">
+                        </div>
                     </div>
 
                     <div class="input-group">
@@ -89,49 +150,133 @@
                         <input type="number" id="h_target" value="50" class="input-field">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="input-group">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group mb-0">
                             <label class="input-label">Vitesse (m/s)</label>
                             <input type="number" id="v_target" value="10" class="input-field">
                         </div>
-                        <div class="input-group">
+                        <div class="input-group mb-0">
                             <label class="input-label">Accél. Pic (m/s²)</label>
                             <input type="number" id="a_target" value="1.2" class="input-field">
                         </div>
                     </div>
                 </div>
 
-                <h2 class="text-xs font-bold text-blue-400 uppercase mb-4 tracking-wider border-b border-slate-600 pb-2">2. Hardware & Dimensions</h2>
-                <div class="bg-slate-900/50 rounded p-3 text-xs space-y-2 font-mono border border-slate-700">
-                    <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] text-slate-400 mb-2 border-b border-slate-700 pb-2">
-                        <span>Rotor Côté:</span> <span class="text-slate-200 text-right">400 mm</span>
-                        <span>Stator Pas:</span> <span class="text-slate-200 text-right">375 mm</span>
-                        <span>Bobine H:</span> <span class="text-slate-200 text-right">300 mm</span>
-                        <span>Entrefer:</span> <span class="text-slate-200 text-right">2.0 mm</span>
+                <h2 class="text-xs font-bold text-blue-400 uppercase mb-4 tracking-widest border-b border-blue-500/30 pb-2">
+                    2. Hardware & Dimensions
+                </h2>
+                
+                <div class="space-y-3">
+                    
+                    <!-- A. ROTOR -->
+                    <div class="hardware-block">
+                        <h3 class="hardware-title">A. ROTOR</h3>
+                        <div class="space-y-2">
+                            <div class="spec-row">
+                                <span class="spec-label">Type</span>
+                                <span class="spec-value">Rotor Passif</span>
+                            </div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Matériau</span> <span class="spec-value">Acier 42CrMo4</span></div>
+                                <span class="tech-note">Acier allié haute résistance mécanique (Indéformable)</span>
+                            </div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Géométrie</span> <span class="spec-value">Triangle Équilatéral</span></div>
+                                <span class="tech-note">Prisme massif pour stabilité magnétique</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-1 border-t border-slate-600/30 pt-1">
+                                <div class="text-[10px] text-slate-400">Côté (L): <span class="text-white font-mono">400mm</span></div>
+                                <div class="text-[10px] text-slate-400 text-right">Prof (P): <span class="text-white font-mono">170mm</span></div>
+                            </div>
+                            <div class="spec-row pt-1"><span class="spec-label">Passage arbre</span> <span class="spec-value">Alésage Ø 100 mm</span></div>
+                        </div>
                     </div>
 
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Courant Nominal:</span>
-                        <span class="text-yellow-400 font-bold">5.73 A</span>
+                    <!-- B. STATOR -->
+                    <div class="hardware-block">
+                        <h3 class="hardware-title">B. STATOR</h3>
+                        <div class="space-y-2">
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Technologie</span> <span class="spec-value">Modulaire (12 Bob./Niv)</span></div>
+                                <span class="tech-note">Groupés par 3 en étoile (6 Av/Ar, 6 G/D)</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 mt-1 border-t border-slate-600/30 pt-1">
+                                <div class="text-[10px] text-slate-400">H. Pôle: <span class="text-white font-mono">300mm</span></div>
+                                <div class="text-[10px] text-slate-400 text-right">L. Pôle: <span class="text-white font-mono">170mm</span></div>
+                            </div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Pas Vertical</span> <span class="spec-value">375 mm</span></div>
+                                <span class="tech-note">Distance centre-à-centre</span>
+                            </div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Entrefer</span> <span class="spec-value text-red-300 font-bold">2.0 mm</span></div>
+                                <span class="tech-note text-red-400/70">Sécurité Critique : Distance constante impérative</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Résistance Bobine:</span>
-                        <span class="text-slate-200">5.87 Ω</span>
+
+                    <!-- C. COMMANDE & ELEC -->
+                    <div class="hardware-block">
+                        <h3 class="hardware-title">C. COMMANDE & ÉLEC</h3>
+                        <div class="space-y-2">
+                            <div class="spec-row"><span class="spec-label">Commande</span> <span class="spec-value">FOC (Field-Oriented)</span></div>
+                            <hr class="border-slate-600/50 my-1">
+                            
+                            <!-- Bobinage Détails -->
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">R Bobine (20°C)</span> <span class="spec-value text-yellow-100">5.87 Ω</span></div>
+                                <span class="tech-note">Prévoir ≈ 7 Ω à chaud (70°C)</span>
+                            </div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Spires (N)</span> <span class="spec-value">500 tours</span></div>
+                                <span class="tech-note">10 couches de 50 spires</span>
+                            </div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label">Fil Cuivre</span> <span class="spec-value">1.15 mm²</span></div>
+                                <span class="tech-note">Ø 1.21 mm (Cuivre nu) | Longueur ≈ 400m</span>
+                            </div>
+                            <div class="spec-row"><span class="spec-label">Pertes (Unit)</span> <span class="spec-value">193 Watts</span></div>
+                            <div class="spec-row"><span class="spec-label">Constante FCEM</span> <span class="spec-value">45 V/(m/s)</span></div>
+                            <div class="spec-row"><span class="spec-label">Chute Tension</span> <span class="spec-value">34 V (R×I)</span></div>
+                            <div>
+                                <div class="spec-row mb-0"><span class="spec-label text-yellow-400">FCEM</span> <span class="spec-value text-yellow-400 font-bold">550 - 1000 V</span></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Constante EMF:</span>
-                        <span class="text-slate-200">45 V/m/s</span>
+
+                    <!-- COURANTS -->
+                    <div class="hardware-block border-l-4 border-l-blue-500">
+                        <h3 class="hardware-title !border-0 !mb-1 !pb-0 text-blue-200">COURANTS DE FONCTIONNEMENT</h3>
+                        <div class="space-y-3 pt-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400 text-xs">Nominal</span>
+                                <span class="text-white font-mono font-bold text-sm">5.73 A</span>
+                            </div>
+                            
+                            <div class="border-t border-slate-600/50 pt-1">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-green-300 text-[10px] uppercase font-bold">Pic "Confort & Sécurité"</span>
+                                    <span class="text-green-400 font-bold font-mono">6.90 A</span>
+                                </div>
+                                <div class="text-[9px] text-slate-400 leading-tight mt-0.5">Accélération max tolérable (2.0 m/s²)</div>
+                            </div>
+
+                            <div class="border-t border-slate-600/50 pt-1">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-red-300 text-[10px] uppercase font-bold">Pic "Limite Système"</span>
+                                    <span class="text-red-400 font-bold font-mono">11.46 A</span>
+                                </div>
+                                <div class="text-[9px] text-slate-400 leading-tight mt-0.5">Capacité max système (9.81 m/s²)</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-slate-400">Pertes Fixes:</span>
-                        <span class="text-slate-200">2.32 kW</span>
-                    </div>
+
                 </div>
             </div>
 
             <div class="p-4 bg-slate-900 border-t border-slate-700 mt-auto">
-                 <button onclick="checkFeasibility()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 rounded shadow-lg transition transform active:scale-95 border border-blue-500/30">
-                    LANCER SIMULATION (S-CURVE)
+                 <button onclick="checkFeasibility()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 rounded-lg shadow-lg transition transform active:scale-[0.98] border border-blue-500/30 text-sm tracking-wide uppercase">
+                    Lancer Simulation
                 </button>
                 <!-- Status -->
                 <div id="statusBox" class="hidden mt-3 text-center text-xs font-bold transition-all duration-300"></div>
@@ -141,20 +286,20 @@
         <!-- Center: Visualisation 2D (Fond BLANC) -->
         <div class="flex-1 bg-white relative border-r border-slate-200 overflow-hidden">
             <div class="absolute top-4 left-4 z-10 pointer-events-none">
-                <div class="bg-white/90 backdrop-blur border border-slate-200 p-3 rounded shadow-lg">
-                    <h3 class="text-xs font-bold text-blue-600 mb-1">VISUALISATION TEMPS RÉEL</h3>
-                    <div class="text-[10px] text-slate-600 font-mono">
-                        Y: <span id="disp_y" class="text-slate-900 text-lg font-bold">0.00</span> m<br>
-                        V: <span id="disp_v" class="text-slate-900">0.00</span> m/s
+                <div class="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-xl shadow-lg ring-1 ring-black/5">
+                    <h3 class="text-[10px] font-black text-blue-600 mb-1 uppercase tracking-widest">Temps Réel</h3>
+                    <div class="text-[10px] text-slate-500 font-mono space-y-1">
+                        <div class="flex justify-between w-24"><span>Pos:</span> <span id="disp_y" class="text-slate-900 font-bold text-sm">0.00 m</span></div>
+                        <div class="flex justify-between w-24"><span>Vit:</span> <span id="disp_v" class="text-slate-900">0.00 m/s</span></div>
                     </div>
                 </div>
             </div>
 
             <!-- Indicateur Régénération -->
             <div id="regenIndicator" class="absolute top-4 right-4 z-10 hidden transition-opacity duration-300">
-                <div class="bg-green-100 backdrop-blur border border-green-500 p-2 rounded shadow-xl flex items-center gap-2">
+                <div class="bg-green-50 backdrop-blur border border-green-500/30 p-2 px-3 rounded-full shadow-xl flex items-center gap-2">
                     <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                    <span class="text-xs font-bold text-green-700">RÉGÉNÉRATION ACTIVE</span>
+                    <span class="text-[10px] font-bold text-green-700 tracking-wide uppercase">Régénération</span>
                 </div>
             </div>
 
@@ -164,35 +309,35 @@
         <!-- Right: Charts (3 sections) -->
         <div class="w-[420px] flex flex-col bg-slate-800 border-l border-slate-700 shrink-0">
             
-            <!-- Chart 1: Cinématique -->
-            <div class="h-1/3 p-2 border-b border-slate-700 flex flex-col relative">
-                <h3 class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
-                    <span>CINÉMATIQUE (S-Curve)</span>
-                    <span class="text-[10px] bg-slate-700 px-1 rounded text-white">Pos / Vit / Acc</span>
+            <!-- Chart 1 -->
+            <div class="h-1/3 p-3 border-b border-slate-700 flex flex-col relative">
+                <h3 class="text-[10px] text-slate-400 font-bold mb-2 flex justify-between tracking-wider">
+                    <span>CINÉMATIQUE</span>
+                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-white font-mono">S-Curve</span>
                 </h3>
-                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded border border-slate-700/50 p-1">
+                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded-lg border border-slate-700/50 p-1">
                     <canvas id="kineChart"></canvas>
                 </div>
             </div>
 
-            <!-- Chart 2: Elec -->
-            <div class="h-1/3 p-2 border-b border-slate-700 flex flex-col relative">
-                <h3 class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
+            <!-- Chart 2 -->
+            <div class="h-1/3 p-3 border-b border-slate-700 flex flex-col relative">
+                <h3 class="text-[10px] text-slate-400 font-bold mb-2 flex justify-between tracking-wider">
                     <span>ÉLECTRIQUE</span>
-                    <span class="text-[10px] bg-slate-700 px-1 rounded text-white">U & I</span>
+                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-white font-mono">U & I</span>
                 </h3>
-                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded border border-slate-700/50 p-1">
+                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded-lg border border-slate-700/50 p-1">
                     <canvas id="elecChart"></canvas>
                 </div>
             </div>
 
-            <!-- Chart 3: Energy -->
-            <div class="h-1/3 p-2 flex flex-col relative">
-                <h3 class="text-xs text-slate-400 font-bold mb-1 flex justify-between">
-                    <span>BILAN ÉNERGIE (CUMUL)</span>
-                    <span class="text-[10px] bg-slate-700 px-1 rounded text-white">kWh</span>
+            <!-- Chart 3 -->
+            <div class="h-1/3 p-3 flex flex-col relative">
+                <h3 class="text-[10px] text-slate-400 font-bold mb-2 flex justify-between tracking-wider">
+                    <span>BILAN ÉNERGIE</span>
+                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-white font-mono">kWh</span>
                 </h3>
-                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded border border-slate-700/50 p-1">
+                <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded-lg border border-slate-700/50 p-1">
                     <canvas id="nrgChart"></canvas>
                 </div>
             </div>
@@ -202,60 +347,63 @@
 
     <!-- Modal Rapport -->
     <div id="reportModal" class="fixed inset-0 modal z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all scale-100">
+        <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all scale-100 ring-1 ring-white/10">
             <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
                     <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    BILAN DE CYCLE COMPLET
+                    RAPPORT DE CYCLE
                 </h2>
-                <button onclick="closeReport()" class="text-slate-400 hover:text-white">&times;</button>
+                <button onclick="closeReport()" class="text-slate-400 hover:text-white transition">&times;</button>
             </div>
             
             <div class="p-6 grid grid-cols-2 gap-6">
-                <!-- Col 1: Mission & Perf -->
-                <div class="space-y-4">
-                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider border-b border-slate-700 pb-1">Performance Mission</h3>
-                    <div class="space-y-2 text-sm">
-                         <div class="flex justify-between"><span>Temps Total:</span> <span id="rep_t" class="font-mono text-white">-- s</span></div>
-                         <div class="flex justify-between"><span>Hauteur Max:</span> <span id="rep_h" class="font-mono text-white">-- m</span></div>
-                         <div class="flex justify-between"><span>Vitesse Pic:</span> <span id="rep_v" class="font-mono text-white">-- m/s</span></div>
-                         <div class="flex justify-between"><span>Accél Max:</span> <span id="rep_a" class="font-mono text-white">-- m/s²</span></div>
+                <!-- Col 1 -->
+                <div class="space-y-5">
+                    <div>
+                        <h3 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest border-b border-slate-700 pb-1 mb-2">Performance</h3>
+                        <div class="space-y-2 text-sm">
+                             <div class="flex justify-between"><span>Temps Total</span> <span id="rep_t" class="font-mono text-white font-bold">-- s</span></div>
+                             <div class="flex justify-between"><span>Hauteur Max</span> <span id="rep_h" class="font-mono text-white font-bold">-- m</span></div>
+                             <div class="flex justify-between"><span>Vitesse Pic</span> <span id="rep_v" class="font-mono text-white">-- m/s</span></div>
+                             <div class="flex justify-between"><span>Accél Max</span> <span id="rep_a" class="font-mono text-white">-- m/s²</span></div>
+                        </div>
                     </div>
 
-                    <h3 class="text-xs font-bold text-blue-500 uppercase tracking-wider border-b border-slate-700 pb-1 mt-4">Hardware Utilisé</h3>
-                    <div class="space-y-2 text-sm">
-                         <div class="flex justify-between"><span>Courant Nominal:</span> <span class="font-mono text-yellow-400">5.73 A</span></div>
-                         <div class="flex justify-between"><span>Tension Commande Max:</span> <span id="rep_u_max" class="font-mono text-blue-300">-- V</span></div>
+                    <div>
+                        <h3 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest border-b border-slate-700 pb-1 mb-2">Pic Système</h3>
+                        <div class="space-y-2 text-sm">
+                             <div class="flex justify-between"><span>Tension Max</span> <span id="rep_u_max" class="font-mono text-blue-300 font-bold">-- V</span></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Col 2: Énergie -->
-                <div class="space-y-4 bg-slate-900/50 p-4 rounded border border-slate-700">
-                    <h3 class="text-xs font-bold text-green-500 uppercase tracking-wider border-b border-slate-700 pb-1">Bilan Énergétique</h3>
+                <!-- Col 2 -->
+                <div class="space-y-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
+                    <h3 class="text-[10px] font-bold text-green-400 uppercase tracking-widest border-b border-slate-700 pb-1 mb-3">Bilan Énergétique</h3>
                     
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-400 text-sm">Conso. Totale</span>
-                        <span id="rep_e_cons" class="text-xl font-bold text-white">-- kWh</span>
+                        <span class="text-slate-400 text-xs">Conso. Totale</span>
+                        <span id="rep_e_cons" class="text-xl font-bold text-white font-mono">-- kWh</span>
                     </div>
                     
                     <div class="flex justify-between items-center">
-                        <span class="text-slate-400 text-sm">Régénération</span>
-                        <span id="rep_e_regen" class="text-lg font-bold text-green-400">-- kWh</span>
+                        <span class="text-slate-400 text-xs">Régénération</span>
+                        <span id="rep_e_regen" class="text-lg font-bold text-green-400 font-mono">-- kWh</span>
                     </div>
 
-                    <div class="flex justify-between items-center text-xs text-red-400 mt-1">
-                        <span>Pertes (Chaleur)</span>
-                        <span id="rep_e_loss">-- kWh</span>
+                    <div class="flex justify-between items-center text-xs text-red-400 mt-1 opacity-80">
+                        <span>Pertes (Joule)</span>
+                        <span id="rep_e_loss" class="font-mono">-- kWh</span>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-slate-600">
+                    <div class="mt-4 pt-3 border-t border-slate-600/50">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm font-bold text-slate-300">% Régénération</span>
-                            <span id="rep_pct_regen" class="bg-green-600 text-white px-2 py-1 rounded text-sm font-bold">-- %</span>
+                            <span class="text-xs font-bold text-slate-300">Taux Régéneration</span>
+                            <span id="rep_pct_regen" class="bg-green-500/20 text-green-300 px-2 py-0.5 rounded text-xs font-bold font-mono">-- %</span>
                         </div>
                         <div class="flex justify-between items-center mt-2">
-                            <span class="text-sm font-bold text-slate-300">Rendement Global</span>
-                            <span id="rep_efficacite" class="bg-blue-600 text-white px-2 py-1 rounded text-sm font-bold">-- %</span>
+                            <span class="text-xs font-bold text-slate-300">Rendement Global</span>
+                            <span id="rep_efficacite" class="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded text-xs font-bold font-mono">-- %</span>
                         </div>
                         <p class="text-[10px] text-slate-500 mt-1 text-right italic">(1 - Pertes/Conso)</p>
                     </div>
@@ -263,7 +411,7 @@
             </div>
             
             <div class="bg-slate-900 p-4 border-t border-slate-700">
-                <button onclick="closeReport()" class="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded font-bold transition">Fermer le rapport</button>
+                <button onclick="closeReport()" class="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg font-bold transition text-sm uppercase tracking-wide">Fermer</button>
             </div>
         </div>
     </div>
@@ -313,12 +461,12 @@
             const pauseContainer = document.getElementById('pause_container');
             
             if(type === 'up') {
-                btnUp.className = "flex-1 py-1 text-xs font-bold rounded bg-blue-600 text-white shadow transition";
-                btnUpDown.className = "flex-1 py-1 text-xs font-bold rounded text-slate-300 hover:text-white transition";
+                btnUp.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-blue-600 text-white shadow-md transition-all duration-200";
+                btnUpDown.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all duration-200";
                 pauseContainer.classList.add('hidden');
             } else {
-                btnUp.className = "flex-1 py-1 text-xs font-bold rounded text-slate-300 hover:text-white transition";
-                btnUpDown.className = "flex-1 py-1 text-xs font-bold rounded bg-red-600 text-white shadow transition";
+                btnUp.className = "flex-1 py-1.5 text-xs font-bold rounded-md text-slate-400 hover:text-white transition-all duration-200";
+                btnUpDown.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-red-600 text-white shadow-md transition-all duration-200";
                 pauseContainer.classList.remove('hidden');
             }
         }
@@ -427,32 +575,16 @@
             const type = simState.missionType;
             const t_pause_input = (type === 'up_down') ? parseFloat(document.getElementById('t_pause').value) : 0;
 
-            // --- NOUVEAU : Calcul Profil S-Curve (Sinusoidal Accel) ---
-            // Pour une accélération sinusoïdale de 0 à PI, la vitesse atteinte est:
-            // V = Integral(a_peak * sin(pi*t/T)) = a_peak * T * (2/pi)
-            // Donc pour atteindre v_lim, avec a_peak fixé (a_lim), il faut un temps d'accel T plus long :
-            // T_acc = (v_lim * pi) / (2 * a_lim)
-            
+            // S-Curve Accel logic
             const pi = Math.PI;
-            let t_acc = (v_lim * pi) / (2 * a_lim); // Temps accel S-Curve
+            let t_acc = (v_lim * pi) / (2 * a_lim); 
             
-            // Distance parcourue pendant S-Curve Accel
-            // Vavg = v_lim / 2 (propriété symétrie cosinus vitesse)
-            // d_acc = v_lim/2 * t_acc
             let d_acc = 0.5 * v_lim * t_acc;
 
             let v_peak = v_lim;
             let t_cruise = 0;
 
-            // Vérification distance courte (Triangle S-Curve ?)
-            // Si 2*d_acc > h, on n'atteint pas v_lim.
             if (2 * d_acc > h) {
-                // On doit couvrir h/2 en accélération
-                // d = 0.5 * v_peak * t_acc
-                // et v_peak = a_lim * t_acc * (2/pi)
-                // d = 0.5 * (a_lim * t_acc * 2/pi) * t_acc = a_lim * t_acc^2 / pi
-                // t_acc = sqrt( (d * pi) / a_lim )
-                // Ici d = h/2
                 t_acc = Math.sqrt( ( (h/2) * pi ) / a_lim );
                 v_peak = a_lim * t_acc * (2/pi);
                 t_cruise = 0;
@@ -486,31 +618,28 @@
             while(running) {
                 let a = 0;
                 
-                // --- STATE MACHINE (S-Curve Logic) ---
-                // Phase Montée
                 if (t <= t_acc) {
-                    // Accel UP (Sine Wave 0 -> PI)
+                    // Accel UP
                     let phi = (t / t_acc) * pi;
                     a = a_lim * Math.sin(phi); 
 
                 } else if (t <= t_acc + t_cruise) {
                     // Cruise UP
                     a = 0;
-                    // Correction dérive v
-                    if (v < v_peak * 0.999) v += (v_peak - v)*0.1; // Soft clamp
+                    if (v < v_peak * 0.999) v += (v_peak - v)*0.1; 
 
                 } else if (t <= t_up_total) {
-                    // Decel UP (Sine Wave)
+                    // Decel UP
                     let t_local = t - (t_acc + t_cruise);
                     let phi = (t_local / t_acc) * pi;
                     a = -a_lim * Math.sin(phi);
 
                 } else if (t <= t_up_total + t_wait) {
-                    // Wait at Top
+                    // Wait
                     a = 0; v = 0; y = h; 
 
                 } else {
-                    // Descente (ou fin si mode Up)
+                    // Down or End
                     if (type === 'up') {
                          a = 0; v = 0; y = h; 
                     } else {
@@ -518,40 +647,35 @@
                         const t_d = t - t_down_start;
                         
                         if (t_d <= t_acc) {
-                            // Accel DOWN (neg)
+                            // Accel DOWN
                             let phi = (t_d / t_acc) * pi;
                             a = -a_lim * Math.sin(phi);
 
                         } else if (t_d <= t_acc + t_cruise) {
                             // Cruise DOWN
                             a = 0;
-                            // Soft clamp v negative
                             if (v > -v_peak * 0.999) v += (-v_peak - v)*0.1;
 
-                        } else if (t_d <= t_up_total) { // Note: Durée descente = durée montée
-                            // Decel DOWN (pos)
+                        } else if (t_d <= t_up_total) { 
+                            // Decel DOWN
                             let t_local = t_d - (t_acc + t_cruise);
                             let phi = (t_local / t_acc) * pi;
                             a = a_lim * Math.sin(phi);
 
                         } else {
-                            // Ground Wait
                             a = 0; v = 0; y = 0; 
                         }
                     }
                 }
 
-                // Physique
                 v += a * dt;
                 y += v * dt;
                 
-                // Clamp Sol & Anti-rebond
                 if (y <= 0) { 
                     y = 0; 
                     if (v < 0 || (a > 0 && t > t_up_total + t_wait)) v = 0; 
                 }
                 
-                // Clamp Plafond (juste au cas où)
                 if (type === 'up' && t > t_up_total && y > h) { y = h; v = 0; }
 
                 // Elec
@@ -569,7 +693,7 @@
                 let P_fixes = (F_mot > 0) ? (HARDWARE.elec.p_fixes / 1000) : 0; 
                 let P_elec = P_meca + P_joule + P_fixes;
 
-                // Energy Step
+                // Energy
                 let dE = P_elec * dt / 3600; 
                 let dE_joule = P_joule * dt / 3600;
                 
@@ -699,11 +823,9 @@
                     const dist = Math.abs(wy - y_sim);
                     let active = dist < (HARDWARE.rotor.hauteur * 1.5);
                     
-                    // Couleur inactive (Gris)
                     let color = '#cbd5e1'; 
                     
                     if (active) {
-                        // ROUGE EN DESSOUS (Poussée), BLEU AU DESSUS (Traction)
                         if (wy < y_sim) {
                             color = '#ef4444'; // Rouge Poussée
                         } else {
