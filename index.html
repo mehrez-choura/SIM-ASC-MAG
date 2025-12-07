@@ -14,7 +14,6 @@
             color: white; 
         }
         canvas { display: block; }
-        .modal { background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); }
         
         /* Scrollbar custom */
         ::-webkit-scrollbar { width: 6px; }
@@ -82,8 +81,8 @@
         .spec-row {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start; /* Alignement haut pour texte long */
-            font-size: 0.75rem; /* Slightly smaller to fit */
+            align-items: flex-start; 
+            font-size: 0.75rem;
             margin-bottom: 0.35rem;
             line-height: 1.2;
         }
@@ -91,6 +90,13 @@
         .spec-value { color: #fff; font-family: 'ui-monospace', 'SFMono-Regular', Menlo, monospace; text-align: right; }
         .tech-note { display: block; font-size: 0.65rem; color: #64748b; font-style: italic; margin-top: 2px; }
         
+        /* Animation Simulation en cours */
+        @keyframes pulse-text {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .animate-text-pulse { animation: pulse-text 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
     </style>
 </head>
 <body class="h-screen flex flex-col overflow-hidden">
@@ -282,39 +288,63 @@
             </div>
         </div>
 
-        <!-- Center: Visualisation 2D (Fond BLANC) -->
-        <div class="flex-1 bg-white relative border-r border-slate-200 overflow-hidden">
-            <div class="absolute top-4 left-4 z-10 pointer-events-none">
-                <div class="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-xl shadow-lg ring-1 ring-black/5">
-                    <h3 class="text-[10px] font-black text-blue-600 mb-1 uppercase tracking-widest">Temps Réel</h3>
-                    <div class="text-[10px] text-slate-500 font-mono space-y-1">
-                        <div class="flex justify-between w-24"><span>Pos:</span> <span id="disp_y" class="text-slate-900 font-bold text-sm">0.00 m</span></div>
-                        <div class="flex justify-between w-24"><span>Vit:</span> <span id="disp_v" class="text-slate-900">0.00 m/s</span></div>
+        <!-- Center Column : Split into 2 parts -->
+        <div class="flex flex-col flex-1 border-r border-slate-200 overflow-hidden">
+            
+            <!-- TOP: Visualisation 2D (65% height approx) -->
+            <div class="flex-1 relative bg-white min-h-[50%]">
+                <div class="absolute top-4 left-4 z-10 pointer-events-none">
+                    <div class="bg-white/90 backdrop-blur-md border border-slate-200 p-4 rounded-xl shadow-lg ring-1 ring-black/5">
+                        <h3 class="text-[10px] font-black text-blue-600 mb-1 uppercase tracking-widest">Temps Réel</h3>
+                        <div class="text-[10px] text-slate-500 font-mono space-y-1">
+                            <div class="flex justify-between w-24"><span>Pos:</span> <span id="disp_y" class="text-slate-900 font-bold text-sm">0.00 m</span></div>
+                            <div class="flex justify-between w-24"><span>Vit:</span> <span id="disp_v" class="text-slate-900">0.00 m/s</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Indicateur Régénération -->
+                <div id="regenIndicator" class="absolute top-4 right-4 z-10 hidden transition-opacity duration-300">
+                    <div class="bg-green-50 backdrop-blur border border-green-500/30 p-2 px-3 rounded-full shadow-xl flex items-center gap-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+                        <span class="text-[10px] font-bold text-green-700 tracking-wide uppercase">Régénération</span>
+                    </div>
+                </div>
+
+                <canvas id="visuCanvas" class="w-full h-full block"></canvas>
+            </div>
+
+            <!-- BOTTOM: Rapport Permanent (Fixed height or % base) -->
+            <div id="reportContainer" class="h-72 bg-slate-50 border-t border-slate-200 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 relative">
+                
+                <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-white">
+                    <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        RAPPORT DE CYCLE
+                    </h3>
+                    <button onclick="downloadReportImage()" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-50 transition" title="Télécharger le rapport">
+                        📥 Télécharger
+                    </button>
+                </div>
+
+                <!-- Content Area -->
+                <div id="reportContent" class="flex-1 p-4 overflow-y-auto relative">
+                    <!-- Default State -->
+                    <div class="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+                        En attente de simulation...
                     </div>
                 </div>
             </div>
 
-            <!-- Indicateur Régénération -->
-            <div id="regenIndicator" class="absolute top-4 right-4 z-10 hidden transition-opacity duration-300">
-                <div class="bg-green-50 backdrop-blur border border-green-500/30 p-2 px-3 rounded-full shadow-xl flex items-center gap-2">
-                    <div class="w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-                    <span class="text-[10px] font-bold text-green-700 tracking-wide uppercase">Régénération</span>
-                </div>
-            </div>
-
-            <canvas id="visuCanvas" class="w-full h-full block"></canvas>
         </div>
 
         <!-- Right: Charts (3 sections) -->
-        <!-- CHANGEMENT: Largeur augmentée de w-[420px] à w-[500px] -->
         <div class="w-[500px] flex flex-col bg-slate-800 border-l border-slate-700 shrink-0">
             
             <!-- Chart 1 -->
             <div class="h-1/3 p-3 border-b border-slate-700 flex flex-col relative">
                 <div class="flex justify-between items-center mb-2">
-                    <!-- CHANGEMENT: Suppression de "(S-Curve)" -->
                     <h3 class="text-[10px] text-slate-400 font-bold tracking-wider">CINÉMATIQUE</h3>
-                    <!-- Bouton Download -->
                     <button onclick="downloadGraph('kineChart', 'Cinematique')" class="text-slate-400 hover:text-white transition" title="Télécharger avec Données">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     </button>
@@ -353,78 +383,7 @@
 
     </div>
 
-    <!-- Modal Rapport -->
-    <div id="reportModal" class="fixed inset-0 modal z-50 hidden flex items-center justify-center p-4">
-        <!-- ... (Contenu identique) ... -->
-        <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all scale-100 ring-1 ring-white/10">
-            <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center">
-                <h2 class="text-lg font-bold text-white flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    RAPPORT DE CYCLE
-                </h2>
-                <button onclick="closeReport()" class="text-slate-400 hover:text-white transition">&times;</button>
-            </div>
-            
-            <div class="p-6 grid grid-cols-2 gap-6">
-                <!-- Col 1 -->
-                <div class="space-y-5">
-                    <div>
-                        <h3 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest border-b border-slate-700 pb-1 mb-2">Performance</h3>
-                        <div class="space-y-2 text-sm">
-                             <div class="flex justify-between"><span>Temps Total</span> <span id="rep_t" class="font-mono text-white font-bold">-- s</span></div>
-                             <div class="flex justify-between"><span>Hauteur Max</span> <span id="rep_h" class="font-mono text-white font-bold">-- m</span></div>
-                             <div class="flex justify-between"><span>Vitesse Pic</span> <span id="rep_v" class="font-mono text-white">-- m/s</span></div>
-                             <div class="flex justify-between"><span>Accél Max</span> <span id="rep_a" class="font-mono text-white">-- m/s²</span></div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <h3 class="text-[10px] font-bold text-blue-400 uppercase tracking-widest border-b border-slate-700 pb-1 mb-2">Pic Système</h3>
-                        <div class="space-y-2 text-sm">
-                             <div class="flex justify-between"><span>Tension Max</span> <span id="rep_u_max" class="font-mono text-blue-300 font-bold">-- V</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Col 2 -->
-                <div class="space-y-4 bg-slate-900/50 p-4 rounded-lg border border-slate-700/50">
-                    <h3 class="text-[10px] font-bold text-green-400 uppercase tracking-widest border-b border-slate-700 pb-1 mb-3">Bilan Énergétique</h3>
-                    
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-400 text-xs">Conso. Totale</span>
-                        <span id="rep_e_cons" class="text-xl font-bold text-white font-mono">-- kWh</span>
-                    </div>
-                    
-                    <div class="flex justify-between items-center">
-                        <span class="text-slate-400 text-xs">Régénération</span>
-                        <span id="rep_e_regen" class="text-lg font-bold text-green-400 font-mono">-- kWh</span>
-                    </div>
-
-                    <div class="flex justify-between items-center text-xs text-red-400 mt-1 opacity-80">
-                        <span>Pertes (Joule)</span>
-                        <span id="rep_e_loss" class="font-mono">-- kWh</span>
-                    </div>
-
-                    <div class="mt-4 pt-3 border-t border-slate-600/50">
-                        <div class="flex justify-between items-center">
-                            <span class="text-xs font-bold text-slate-300">Taux Régéneration</span>
-                            <span id="rep_pct_regen" class="bg-green-500/20 text-green-300 px-2 py-0.5 rounded text-xs font-bold font-mono">-- %</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-xs font-bold text-slate-300">Rendement Global</span>
-                            <span id="rep_efficacite" class="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded text-xs font-bold font-mono">-- %</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="bg-slate-900 p-4 border-t border-slate-700">
-                <button onclick="closeReport()" class="w-full bg-slate-700 hover:bg-slate-600 text-white py-2 rounded-lg font-bold transition text-sm uppercase tracking-wide">Fermer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Validation -->
+    <!-- Modal Validation (Warning only now) -->
     <div id="validationModal" class="fixed inset-0 modal z-[60] hidden flex items-center justify-center p-4">
         <div id="valModalContent" class="bg-slate-800 border-2 rounded-xl max-w-md w-full shadow-2xl overflow-hidden transform transition-all scale-100 relative">
             <div id="valHeader" class="p-4 border-b flex justify-between items-center bg-yellow-900/30 border-yellow-600/50">
@@ -509,7 +468,7 @@
             });
         }
 
-        // --- FONCTION DE TÉLÉCHARGEMENT AVANCÉE ---
+        // --- DOWNLOAD UTILS ---
         function downloadGraph(canvasId, filename) {
             const sourceCanvas = document.getElementById(canvasId);
             const m = document.getElementById('m_tot').value;
@@ -517,41 +476,101 @@
             const v = document.getElementById('v_target').value;
             const a = document.getElementById('a_target').value;
             
-            // Création Canvas Temporaire
             const destCanvas = document.createElement('canvas');
             const ctx = destCanvas.getContext('2d');
-            
-            // Dimensions : Chart + Espace texte en bas
             const chartHeight = sourceCanvas.height;
             const textHeight = 60;
             destCanvas.width = sourceCanvas.width;
             destCanvas.height = chartHeight + textHeight;
             
-            // Fond Blanc
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, destCanvas.width, destCanvas.height);
-            
-            // Dessiner le graphe (Source -> Dest)
-            // Note: Chart.js canvas background est transparent, donc ok sur fond blanc
             ctx.drawImage(sourceCanvas, 0, 0);
-            
-            // Dessiner les Données Inputs
-            ctx.fillStyle = '#1e293b'; // Slate 800 text
+            ctx.fillStyle = '#1e293b'; 
             ctx.font = 'bold 12px Inter, sans-serif';
             ctx.textAlign = 'center';
             
             const text = `INPUTS: Masse ${m}kg | Hauteur ${h}m | Vitesse ${v}m/s | Accél ${a}m/s²`;
             ctx.fillText(text, destCanvas.width / 2, chartHeight + 35);
-            
-            // Timestamp discret
             ctx.font = 'italic 10px sans-serif';
             ctx.fillStyle = '#94a3b8';
             ctx.fillText(`Généré le ${new Date().toLocaleString()}`, destCanvas.width / 2, chartHeight + 50);
             
-            // Déclencher Téléchargement
             const link = document.createElement('a');
             link.download = `M-LEV_${filename}.png`;
             link.href = destCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        function downloadReportImage() {
+            const reportContent = document.getElementById('reportContent');
+            // Basic html-to-canvas approximation by manual drawing since we can't use html2canvas
+            // Creating a clean canvas summary of the report
+            
+            // Check if report exists
+            if (!simState.data.t || simState.data.t.length === 0) {
+                alert("Aucun rapport disponible. Veuillez lancer une simulation.");
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+
+            // BG
+            ctx.fillStyle = '#f8fafc'; // slate-50
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Header
+            ctx.fillStyle = '#1e293b'; // slate-900
+            ctx.fillRect(0, 0, canvas.width, 60);
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px Inter, sans-serif';
+            ctx.fillText('RAPPORT DE CYCLE M-LEV', 20, 38);
+
+            // Data extraction logic similar to showFinalReport
+            const d = simState.data; const l = d.t.length-1;
+            const time = d.t[l].toFixed(1) + " s";
+            const h_max = Math.max(...d.y).toFixed(1) + " m";
+            const v_max = Math.max(...d.v).toFixed(1) + " m/s";
+            const e_cons = d.e_cons_total.toFixed(3) + " kWh";
+            const e_regen = d.e_regen_total.toFixed(3) + " kWh";
+            const eff = (d.e_cons_total>0) ? (1-(d.e_loss_total/d.e_cons_total))*100 : 0;
+            
+            // Draw content
+            ctx.fillStyle = '#334155';
+            ctx.font = '14px Inter, sans-serif';
+            
+            let y = 100;
+            const x1 = 40;
+            const x2 = 300;
+
+            // Col 1
+            ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillText('PERFORMANCE', x1, y); y+=25;
+            ctx.font = '14px Inter, sans-serif';
+            ctx.fillText(`Temps Total: ${time}`, x1, y); y+=25;
+            ctx.fillText(`Hauteur Max: ${h_max}`, x1, y); y+=25;
+            ctx.fillText(`Vitesse Pic: ${v_max}`, x1, y); y+=40;
+
+            // Col 2
+            y = 100;
+            ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillText('ÉNERGIE', x2, y); y+=25;
+            ctx.font = '14px Inter, sans-serif';
+            ctx.fillText(`Conso Totale: ${e_cons}`, x2, y); y+=25;
+            ctx.fillStyle = '#16a34a'; // Green
+            ctx.fillText(`Régénération: ${e_regen}`, x2, y); y+=25;
+            ctx.fillStyle = '#2563eb'; // Blue
+            ctx.fillText(`Rendement: ${eff.toFixed(1)} %`, x2, y);
+
+            // Footer
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = 'italic 12px sans-serif';
+            ctx.fillText(`Simulation générée le ${new Date().toLocaleString()}`, 20, 380);
+
+            const link = document.createElement('a');
+            link.download = `M-LEV_Rapport_Cycle.png`;
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
 
@@ -620,6 +639,15 @@
         }
 
         function runSimulation() {
+            // 1. Reset Report Area to Loading State
+            const reportContent = document.getElementById('reportContent');
+            reportContent.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-full space-y-3">
+                    <div class="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <div class="text-blue-500 font-bold tracking-widest animate-text-pulse">SIMULATION EN COURS...</div>
+                </div>
+            `;
+
             const m = parseFloat(document.getElementById('m_tot').value);
             const h = parseFloat(document.getElementById('h_target').value);
             const v_lim = parseFloat(document.getElementById('v_target').value);
@@ -798,21 +826,73 @@
 
         function showFinalReport() {
             const d = simState.data; const l = d.t.length-1;
-            document.getElementById('rep_t').innerText = d.t[l].toFixed(1) + " s";
-            document.getElementById('rep_h').innerText = Math.max(...d.y).toFixed(1) + " m";
-            document.getElementById('rep_v').innerText = Math.max(...d.v).toFixed(1) + " m/s";
-            document.getElementById('rep_a').innerText = Math.max(...d.a).toFixed(1) + " m/s²";
-            document.getElementById('rep_e_cons').innerText = d.e_cons_total.toFixed(3) + " kWh";
-            document.getElementById('rep_e_loss').innerText = d.e_loss_total.toFixed(3) + " kWh";
-            document.getElementById('rep_e_regen').innerText = d.e_regen_total.toFixed(3) + " kWh";
-            const pct = (d.e_cons_total>0) ? (d.e_regen_total/d.e_cons_total*100) : 0;
-            document.getElementById('rep_pct_regen').innerText = pct.toFixed(1) + " %";
-            const eff = (d.e_cons_total>0) ? (1-(d.e_loss_total/d.e_cons_total))*100 : 0;
-            document.getElementById('rep_efficacite').innerText = eff.toFixed(1) + " %";
-            document.getElementById('rep_u_max').innerText = Math.max(...d.u).toFixed(0) + " V";
-            document.getElementById('reportModal').classList.remove('hidden');
+            
+            // Calculs
+            const time = d.t[l].toFixed(1) + " s";
+            const h_max = Math.max(...d.y).toFixed(1) + " m";
+            const v_max = Math.max(...d.v).toFixed(1) + " m/s";
+            const a_max = Math.max(...d.a).toFixed(1) + " m/s²";
+            const e_cons = d.e_cons_total.toFixed(3) + " kWh";
+            const e_loss = d.e_loss_total.toFixed(3) + " kWh";
+            const e_regen = d.e_regen_total.toFixed(3) + " kWh";
+            const pct = (d.e_cons_total>0) ? (d.e_regen_total/d.e_cons_total*100).toFixed(1) : "0.0";
+            const eff = (d.e_cons_total>0) ? ((1-(d.e_loss_total/d.e_cons_total))*100).toFixed(1) : "0.0";
+            const u_max = Math.max(...d.u).toFixed(0) + " V";
+
+            // Injecter HTML dans le Rapport Permanent
+            const reportContent = document.getElementById('reportContent');
+            reportContent.innerHTML = `
+                <div class="grid grid-cols-2 gap-4 h-full">
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded border border-slate-200">
+                            <h4 class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-2">Performance</h4>
+                            <div class="text-xs space-y-1 text-slate-600">
+                                <div class="flex justify-between"><span>Temps Total:</span> <span class="font-bold text-slate-900">${time}</span></div>
+                                <div class="flex justify-between"><span>Hauteur Max:</span> <span class="font-bold text-slate-900">${h_max}</span></div>
+                                <div class="flex justify-between"><span>Vitesse Pic:</span> <span class="font-bold text-slate-900">${v_max}</span></div>
+                                <div class="flex justify-between"><span>Accél Max:</span> <span class="font-bold text-slate-900">${a_max}</span></div>
+                            </div>
+                        </div>
+                        <div class="bg-white p-3 rounded border border-slate-200">
+                            <h4 class="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-2">Système</h4>
+                            <div class="text-xs flex justify-between text-slate-600">
+                                <span>Tension Max:</span> <span class="font-bold text-blue-600">${u_max}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 p-3 rounded border border-slate-700 text-slate-300 flex flex-col justify-between">
+                        <div>
+                            <h4 class="text-[10px] font-bold text-green-400 uppercase tracking-wider mb-3">Bilan Énergétique</h4>
+                            <div class="text-xs space-y-2">
+                                <div class="flex justify-between items-center">
+                                    <span>Conso Total</span>
+                                    <span class="font-mono text-white font-bold">${e_cons}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-green-400">Régénération</span>
+                                    <span class="font-mono text-green-400 font-bold">${e_regen}</span>
+                                </div>
+                                <div class="flex justify-between items-center text-red-400/80 text-[10px]">
+                                    <span>Pertes</span>
+                                    <span>${e_loss}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="space-y-2 pt-3 border-t border-slate-700/50">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] uppercase font-bold">Taux Regen</span>
+                                <span class="bg-green-500/20 text-green-400 px-2 py-0.5 rounded text-xs font-mono font-bold">${pct}%</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] uppercase font-bold">Rendement</span>
+                                <span class="bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded text-xs font-mono font-bold">${eff}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
-        function closeReport() { document.getElementById('reportModal').classList.add('hidden'); }
         window.onload = initCharts;
     </script>
 </body>
