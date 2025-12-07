@@ -113,7 +113,6 @@
     <div class="flex-1 flex overflow-hidden">
         
         <!-- Sidebar: Configuration -->
-        <!-- CHANGEMENT: Largeur réduite de w-96 à w-80 pour laisser plus de place au centre -->
         <div class="w-80 bg-slate-800 flex flex-col border-r border-slate-700 shrink-0 z-10 shadow-2xl overflow-y-auto custom-scrollbar">
             
             <div class="p-5 flex-1">
@@ -275,7 +274,7 @@
             </div>
 
             <div class="p-4 bg-slate-900 border-t border-slate-700 mt-auto">
-                 <button onclick="checkFeasibility()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 rounded-lg shadow-lg transition transform active:scale-[0.98] border border-blue-500/30 text-sm tracking-wide uppercase">
+                 <button onclick="preValidate()" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3.5 rounded-lg shadow-lg transition transform active:scale-[0.98] border border-blue-500/30 text-sm tracking-wide uppercase">
                     Lancer Simulation
                 </button>
                 <!-- Status -->
@@ -307,14 +306,19 @@
         </div>
 
         <!-- Right: Charts (3 sections) -->
-        <div class="w-[420px] flex flex-col bg-slate-800 border-l border-slate-700 shrink-0">
+        <!-- CHANGEMENT: Largeur augmentée de w-[420px] à w-[500px] -->
+        <div class="w-[500px] flex flex-col bg-slate-800 border-l border-slate-700 shrink-0">
             
             <!-- Chart 1 -->
             <div class="h-1/3 p-3 border-b border-slate-700 flex flex-col relative">
-                <h3 class="text-[10px] text-slate-400 font-bold mb-2 flex justify-between tracking-wider">
-                    <span>CINÉMATIQUE</span>
-                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-white font-mono">S-Curve</span>
-                </h3>
+                <div class="flex justify-between items-center mb-2">
+                    <!-- CHANGEMENT: Suppression de "(S-Curve)" -->
+                    <h3 class="text-[10px] text-slate-400 font-bold tracking-wider">CINÉMATIQUE</h3>
+                    <!-- Bouton Download -->
+                    <button onclick="downloadGraph('kineChart', 'Cinematique')" class="text-slate-400 hover:text-white transition" title="Télécharger avec Données">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
+                </div>
                 <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded-lg border border-slate-700/50 p-1">
                     <canvas id="kineChart"></canvas>
                 </div>
@@ -322,10 +326,12 @@
 
             <!-- Chart 2 -->
             <div class="h-1/3 p-3 border-b border-slate-700 flex flex-col relative">
-                <h3 class="text-[10px] text-slate-400 font-bold mb-2 flex justify-between tracking-wider">
-                    <span>ÉLECTRIQUE</span>
-                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-white font-mono">U & I</span>
-                </h3>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-[10px] text-slate-400 font-bold tracking-wider">ÉLECTRIQUE</h3>
+                    <button onclick="downloadGraph('elecChart', 'Electrique')" class="text-slate-400 hover:text-white transition" title="Télécharger avec Données">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
+                </div>
                 <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded-lg border border-slate-700/50 p-1">
                     <canvas id="elecChart"></canvas>
                 </div>
@@ -333,10 +339,12 @@
 
             <!-- Chart 3 -->
             <div class="h-1/3 p-3 flex flex-col relative">
-                <h3 class="text-[10px] text-slate-400 font-bold mb-2 flex justify-between tracking-wider">
-                    <span>BILAN ÉNERGIE</span>
-                    <span class="bg-slate-700 px-1.5 py-0.5 rounded text-white font-mono">kWh</span>
-                </h3>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-[10px] text-slate-400 font-bold tracking-wider">BILAN ÉNERGIE (CUMUL)</h3>
+                    <button onclick="downloadGraph('nrgChart', 'Energie')" class="text-slate-400 hover:text-white transition" title="Télécharger avec Données">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
+                </div>
                 <div class="flex-1 relative min-h-0 bg-slate-900/50 rounded-lg border border-slate-700/50 p-1">
                     <canvas id="nrgChart"></canvas>
                 </div>
@@ -347,6 +355,7 @@
 
     <!-- Modal Rapport -->
     <div id="reportModal" class="fixed inset-0 modal z-50 hidden flex items-center justify-center p-4">
+        <!-- ... (Contenu identique) ... -->
         <div class="bg-slate-800 border border-slate-600 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all scale-100 ring-1 ring-white/10">
             <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center">
                 <h2 class="text-lg font-bold text-white flex items-center gap-2">
@@ -405,7 +414,6 @@
                             <span class="text-xs font-bold text-slate-300">Rendement Global</span>
                             <span id="rep_efficacite" class="bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded text-xs font-bold font-mono">-- %</span>
                         </div>
-                        <p class="text-[10px] text-slate-500 mt-1 text-right italic">(1 - Pertes/Conso)</p>
                     </div>
                 </div>
             </div>
@@ -416,46 +424,37 @@
         </div>
     </div>
 
-    <script>
-        // ==========================================
-        // CONFIGURATION HARDWARE
-        // ==========================================
-        const HARDWARE = {
-            rotor: {
-                cote: 0.400,      // m
-                hauteur: 0.400 * Math.sqrt(3) / 2,
-                ratio_rot: 1.2    // m/tour
-            },
-            stator: {
-                h_bobine: 0.300,
-                w_bobine: 0.170,
-                pas: 0.375,
-                ecart: 0.404
-            },
-            elec: {
-                f_max: 39240,     // N
-                r_phase: 5.87,    // Ohm
-                k_emf: 45,        // V/m/s
-                p_fixes: 2320,    // W
-                i_nom: 5.73       // A
-            }
-        };
+    <!-- Modal Validation -->
+    <div id="validationModal" class="fixed inset-0 modal z-[60] hidden flex items-center justify-center p-4">
+        <div id="valModalContent" class="bg-slate-800 border-2 rounded-xl max-w-md w-full shadow-2xl overflow-hidden transform transition-all scale-100 relative">
+            <div id="valHeader" class="p-4 border-b flex justify-between items-center bg-yellow-900/30 border-yellow-600/50">
+                <h2 id="valTitle" class="text-lg font-bold text-yellow-400 flex items-center gap-2">⚠️ AVERTISSEMENT</h2>
+            </div>
+            <div class="p-6">
+                <div id="valMessage" class="text-sm text-slate-300 space-y-4"></div>
+            </div>
+            <div class="bg-slate-900 p-4 border-t border-slate-700 flex gap-3 justify-end">
+                <button id="valBtnCancel" onclick="closeValidation()" class="px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white hover:bg-slate-700 transition">Annuler</button>
+                <button id="valBtnConfirm" onclick="confirmSimulation()" class="px-4 py-2 rounded-lg text-sm font-bold bg-yellow-600 text-white hover:bg-yellow-500 shadow-lg transition">CONFIRMER & FORCER</button>
+            </div>
+        </div>
+    </div>
 
-        let simState = {
-            running: false,
-            data: {},
-            missionType: 'up'
+    <script>
+        // CONFIG & STATE ...
+        const HARDWARE = {
+            rotor: { cote: 0.400, hauteur: 0.400 * Math.sqrt(3) / 2, ratio_rot: 1.2 },
+            stator: { h_bobine: 0.300, w_bobine: 0.170, pas: 0.375, ecart: 0.404 },
+            elec: { f_max: 39240, r_phase: 5.87, k_emf: 45, p_fixes: 2320, i_nom: 5.73 }
         };
+        let simState = { running: false, data: {}, missionType: 'up' };
         let charts = {};
         let animId;
 
-        // ==========================================
-        // UI INTERACTION
-        // ==========================================
+        // UI & CHARTS SETUP ...
         function setMission(type) {
             simState.missionType = type;
             document.getElementById('mission_type').value = type;
-            
             const btnUp = document.getElementById('btn_up');
             const btnUpDown = document.getElementById('btn_updown');
             const pauseContainer = document.getElementById('pause_container');
@@ -471,26 +470,16 @@
             }
         }
 
-        // ==========================================
-        // CHARTS SETUP
-        // ==========================================
         function initCharts() {
             Chart.defaults.color = '#64748b';
             Chart.defaults.borderColor = '#334155';
-            
             const commonOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: false,
+                responsive: true, maintainAspectRatio: false, animation: false,
                 elements: { point: { radius: 0 } },
                 plugins: { legend: { display: true, labels: { color: '#94a3b8', boxWidth: 8, font: {size: 9} } } },
-                scales: {
-                    x: { display: false },
-                    y: { grid: { color: '#1e293b' }, ticks: { font: {size: 9} } }
-                }
+                scales: { x: { display: false }, y: { grid: { color: '#1e293b' }, ticks: { font: {size: 9} } } }
             };
 
-            // 1. Kinematics Chart
             charts.kine = new Chart(document.getElementById('kineChart'), {
                 type: 'line',
                 data: { labels: [], datasets: [
@@ -498,58 +487,123 @@
                     { label: 'Vit (m/s)', data: [], borderColor: '#22c55e', borderWidth: 1.5, yAxisID: 'y1' },
                     { label: 'Acc (m/s²)', data: [], borderColor: '#eab308', borderWidth: 1, borderDash: [2,2], yAxisID: 'y1' }
                 ]},
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        x: { display: false },
-                        y: { position: 'left', title: {display: false} },
-                        y1: { position: 'right', grid: {drawOnChartArea: false} }
-                    }
-                }
+                options: { ...commonOptions, scales: { x: { display: false }, y: { position: 'left', title: {display: false} }, y1: { position: 'right', grid: {drawOnChartArea: false} } } }
             });
 
-            // 2. Elec Chart
             charts.elec = new Chart(document.getElementById('elecChart'), {
                 type: 'line',
                 data: { labels: [], datasets: [
                     { label: 'U (V)', data: [], borderColor: '#38bdf8', borderWidth: 1.5, yAxisID: 'y' },
                     { label: 'I (A)', data: [], borderColor: '#f472b6', borderWidth: 1.5, yAxisID: 'y1' }
                 ]},
-                options: {
-                    ...commonOptions,
-                    scales: {
-                        x: { display: false },
-                        y: { position: 'left' },
-                        y1: { position: 'right', grid: {drawOnChartArea: false} }
-                    }
-                }
+                options: { ...commonOptions, scales: { x: { display: false }, y: { position: 'left' }, y1: { position: 'right', grid: {drawOnChartArea: false} } } }
             });
 
-            // 3. Energy Chart
             charts.nrg = new Chart(document.getElementById('nrgChart'), {
                 type: 'line',
                 data: { labels: [], datasets: [
-                    { label: 'Conso Cumul (kWh)', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, borderWidth: 1.5 },
-                    { label: 'Regen Cumul (kWh)', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, borderWidth: 1.5 }
+                    { label: 'Conso (kWh)', data: [], borderColor: '#f59e0b', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, borderWidth: 1.5 },
+                    { label: 'Regen (kWh)', data: [], borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, borderWidth: 1.5 }
                 ]},
-                options: {
-                    ...commonOptions,
-                    plugins: { legend: { display: true, labels: { boxWidth: 8, font: {size: 9} } } },
-                    scales: {
-                        x: { display: true, ticks: { maxTicksLimit: 5 } },
-                        y: { title: {display: true, text: 'kWh'} }
-                    }
-                }
+                options: { ...commonOptions, scales: { x: { display: true, ticks: { maxTicksLimit: 5 } }, y: { title: {display: true, text: 'kWh'} } } }
             });
         }
 
-        // ==========================================
-        // PHYSIQUE & SIMULATION
-        // ==========================================
+        // --- FONCTION DE TÉLÉCHARGEMENT AVANCÉE ---
+        function downloadGraph(canvasId, filename) {
+            const sourceCanvas = document.getElementById(canvasId);
+            const m = document.getElementById('m_tot').value;
+            const h = document.getElementById('h_target').value;
+            const v = document.getElementById('v_target').value;
+            const a = document.getElementById('a_target').value;
+            
+            // Création Canvas Temporaire
+            const destCanvas = document.createElement('canvas');
+            const ctx = destCanvas.getContext('2d');
+            
+            // Dimensions : Chart + Espace texte en bas
+            const chartHeight = sourceCanvas.height;
+            const textHeight = 60;
+            destCanvas.width = sourceCanvas.width;
+            destCanvas.height = chartHeight + textHeight;
+            
+            // Fond Blanc
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, destCanvas.width, destCanvas.height);
+            
+            // Dessiner le graphe (Source -> Dest)
+            // Note: Chart.js canvas background est transparent, donc ok sur fond blanc
+            ctx.drawImage(sourceCanvas, 0, 0);
+            
+            // Dessiner les Données Inputs
+            ctx.fillStyle = '#1e293b'; // Slate 800 text
+            ctx.font = 'bold 12px Inter, sans-serif';
+            ctx.textAlign = 'center';
+            
+            const text = `INPUTS: Masse ${m}kg | Hauteur ${h}m | Vitesse ${v}m/s | Accél ${a}m/s²`;
+            ctx.fillText(text, destCanvas.width / 2, chartHeight + 35);
+            
+            // Timestamp discret
+            ctx.font = 'italic 10px sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText(`Généré le ${new Date().toLocaleString()}`, destCanvas.width / 2, chartHeight + 50);
+            
+            // Déclencher Téléchargement
+            const link = document.createElement('a');
+            link.download = `M-LEV_${filename}.png`;
+            link.href = destCanvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // VALIDATION & SIMULATION LOGIC ...
+        function preValidate() {
+            const v = parseFloat(document.getElementById('v_target').value);
+            const a = parseFloat(document.getElementById('a_target').value);
+            const m = parseFloat(document.getElementById('m_tot').value);
+            let warnings = [], criticals = [];
+
+            if (v > 20) criticals.push(`<strong>Vitesse (${v} m/s) > 20 m/s</strong><br>Critique : Limite tension onduleur (>1000V FCEM).`);
+            else if (v > 15) warnings.push(`<strong>Vitesse (${v} m/s) > 15 m/s</strong><br>Warning : Inconfort auriculaire.`);
+
+            if (a > 9.81) criticals.push(`<strong>Accélération (${a} m/s²) > 9.81 m/s²</strong><br>Critique : Limite physique moteur (1G).`);
+            else if (a > 2.0) warnings.push(`<strong>Accélération (${a} m/s²) > 2.0 m/s²</strong><br>Warning : Risque chute passagers.`);
+
+            if (m > 4000) criticals.push(`<strong>Masse (${m} kg) > 4000 kg</strong><br>Critique : Décrochage moteur.`);
+            else if (m > 2500) warnings.push(`<strong>Masse (${m} kg) > 2500 kg</strong><br>Warning : Surcharge.`);
+
+            if (criticals.length > 0) showValidationModal('critical', criticals);
+            else if (warnings.length > 0) showValidationModal('warning', warnings);
+            else checkFeasibility();
+        }
+
+        function showValidationModal(type, msgs) {
+            const modal = document.getElementById('validationModal');
+            document.getElementById('valMessage').innerHTML = msgs.map(m => `<div class="p-3 bg-black/20 rounded border border-white/5">${m}</div>`).join('');
+            modal.classList.remove('hidden');
+            
+            const header = document.getElementById('valHeader');
+            const btnConfirm = document.getElementById('valBtnConfirm');
+            const btnCancel = document.getElementById('valBtnCancel');
+
+            if (type === 'critical') {
+                header.className = "p-4 border-b flex justify-between items-center bg-red-900/50 border-red-600";
+                document.getElementById('valTitle').innerHTML = "⛔ LIMITE CRITIQUE (ARRÊT)";
+                btnConfirm.classList.add('hidden');
+                btnCancel.innerText = "Retour";
+            } else {
+                header.className = "p-4 border-b flex justify-between items-center bg-yellow-900/30 border-yellow-600/50";
+                document.getElementById('valTitle').innerHTML = "⚠️ SEUIL D'AVERTISSEMENT";
+                btnConfirm.classList.remove('hidden');
+                btnCancel.innerText = "Annuler";
+            }
+        }
+
+        function closeValidation() { document.getElementById('validationModal').classList.add('hidden'); }
+        function confirmSimulation() { closeValidation(); checkFeasibility(); }
+
         function checkFeasibility() {
             const m = parseFloat(document.getElementById('m_tot').value);
             const a = parseFloat(document.getElementById('a_target').value);
-            
             const f_req = m * (9.81 + a);
             const statusBox = document.getElementById('statusBox');
 
@@ -557,14 +611,12 @@
                 statusBox.className = "mt-3 p-2 text-center text-xs font-bold rounded bg-red-900/50 text-red-300 border border-red-500/50";
                 statusBox.innerHTML = `⚠️ NON FAISABLE: Force ${f_req.toFixed(0)}N > Max ${HARDWARE.elec.f_max}N`;
                 statusBox.classList.remove('hidden');
-                return;
+            } else {
+                statusBox.className = "mt-3 p-2 text-center text-xs font-bold rounded bg-green-900/50 text-green-300 border border-green-500/50";
+                statusBox.innerHTML = `✅ SYSTÈME VALIDE: Marge de Sécurité ${(100*(HARDWARE.elec.f_max/f_req - 1)).toFixed(0)}%`;
+                statusBox.classList.remove('hidden');
+                runSimulation();
             }
-
-            statusBox.className = "mt-3 p-2 text-center text-xs font-bold rounded bg-green-900/50 text-green-300 border border-green-500/50";
-            statusBox.innerHTML = `✅ SYSTÈME VALIDE: Marge de Sécurité ${(100*(HARDWARE.elec.f_max/f_req - 1)).toFixed(0)}%`;
-            statusBox.classList.remove('hidden');
-
-            runSimulation();
         }
 
         function runSimulation() {
@@ -573,339 +625,194 @@
             const v_lim = parseFloat(document.getElementById('v_target').value);
             const a_lim = parseFloat(document.getElementById('a_target').value);
             const type = simState.missionType;
-            const t_pause_input = (type === 'up_down') ? parseFloat(document.getElementById('t_pause').value) : 0;
+            const t_pause = (type === 'up_down') ? parseFloat(document.getElementById('t_pause').value) : 0;
 
-            // S-Curve Accel logic
             const pi = Math.PI;
-            let t_acc = (v_lim * pi) / (2 * a_lim); 
-            
+            let t_acc = (v_lim * pi) / (2 * a_lim);
             let d_acc = 0.5 * v_lim * t_acc;
-
             let v_peak = v_lim;
             let t_cruise = 0;
 
             if (2 * d_acc > h) {
-                t_acc = Math.sqrt( ( (h/2) * pi ) / a_lim );
+                t_acc = Math.sqrt(((h/2)*pi)/a_lim);
                 v_peak = a_lim * t_acc * (2/pi);
-                t_cruise = 0;
             } else {
                 t_cruise = (h - 2 * d_acc) / v_peak;
             }
             
-            const t_up_total = 2*t_acc + t_cruise;
-            const t_wait = t_pause_input; 
-            
-            const t_cycle_end = (type === 'up') ? t_up_total : (t_up_total + t_wait + t_up_total);
-            const t_max_sim = t_cycle_end + 2.0;
+            const t_up = 2*t_acc + t_cruise;
+            const t_cycle_end = (type === 'up') ? t_up : (t_up + t_pause + t_up);
+            const t_max = t_cycle_end + 2.0;
 
-            // Simulation Loop
             const dt = 0.05;
-            let t = 0;
-            let y = 0;
-            let v = 0;
-
-            let data = {
-                t: [], y: [], v: [], a: [],
-                u: [], i: [], 
-                e_cons_cumul: [], e_regen_cumul: [],
-                e_cons_total: 0, e_regen_total: 0, e_loss_total: 0
-            };
-
-            let running = true;
-            let current_e_cons = 0;
-            let current_e_regen = 0;
+            let t = 0, y = 0, v = 0;
+            let data = { t: [], y: [], v: [], a: [], u: [], i: [], e_cons_cumul: [], e_regen_cumul: [], e_cons_total: 0, e_regen_total: 0, e_loss_total: 0 };
             
+            let running = true;
+            let cur_cons = 0, cur_regen = 0;
+
             while(running) {
                 let a = 0;
-                
+                // S-Curve Logic simplified
                 if (t <= t_acc) {
-                    // Accel UP
-                    let phi = (t / t_acc) * pi;
-                    a = a_lim * Math.sin(phi); 
-
+                    a = a_lim * Math.sin((t/t_acc)*pi);
                 } else if (t <= t_acc + t_cruise) {
-                    // Cruise UP
-                    a = 0;
-                    if (v < v_peak * 0.999) v += (v_peak - v)*0.1; 
-
-                } else if (t <= t_up_total) {
-                    // Decel UP
-                    let t_local = t - (t_acc + t_cruise);
-                    let phi = (t_local / t_acc) * pi;
-                    a = -a_lim * Math.sin(phi);
-
-                } else if (t <= t_up_total + t_wait) {
-                    // Wait
-                    a = 0; v = 0; y = h; 
-
+                    a = 0; if (v < v_peak*0.999) v += (v_peak-v)*0.1;
+                } else if (t <= t_up) {
+                    a = -a_lim * Math.sin(((t-(t_acc+t_cruise))/t_acc)*pi);
+                } else if (t <= t_up + t_pause) {
+                    a = 0; v = 0; y = h;
                 } else {
-                    // Down or End
-                    if (type === 'up') {
-                         a = 0; v = 0; y = h; 
-                    } else {
-                        const t_down_start = t_up_total + t_wait;
-                        const t_d = t - t_down_start;
-                        
-                        if (t_d <= t_acc) {
-                            // Accel DOWN
-                            let phi = (t_d / t_acc) * pi;
-                            a = -a_lim * Math.sin(phi);
-
-                        } else if (t_d <= t_acc + t_cruise) {
-                            // Cruise DOWN
-                            a = 0;
-                            if (v > -v_peak * 0.999) v += (-v_peak - v)*0.1;
-
-                        } else if (t_d <= t_up_total) { 
-                            // Decel DOWN
-                            let t_local = t_d - (t_acc + t_cruise);
-                            let phi = (t_local / t_acc) * pi;
-                            a = a_lim * Math.sin(phi);
-
-                        } else {
-                            a = 0; v = 0; y = 0; 
-                        }
+                    if (type === 'up') { a=0; v=0; y=h; }
+                    else {
+                        const t_d = t - (t_up + t_pause);
+                        if (t_d <= t_acc) a = -a_lim * Math.sin((t_d/t_acc)*pi);
+                        else if (t_d <= t_acc + t_cruise) { a=0; if (v > -v_peak*0.999) v+= (-v_peak-v)*0.1; }
+                        else if (t_d <= t_up) a = a_lim * Math.sin(((t_d-(t_acc+t_cruise))/t_acc)*pi);
+                        else { a=0; v=0; y=0; }
                     }
                 }
 
-                v += a * dt;
-                y += v * dt;
-                
-                if (y <= 0) { 
-                    y = 0; 
-                    if (v < 0 || (a > 0 && t > t_up_total + t_wait)) v = 0; 
-                }
-                
-                if (type === 'up' && t > t_up_total && y > h) { y = h; v = 0; }
+                v += a * dt; y += v * dt;
+                if(y <= 0) { y=0; if(v<0 || (a>0 && t>t_up+t_pause)) v=0; }
+                if(type === 'up' && t > t_up && y > h) { y=h; v=0; }
 
                 // Elec
-                let F_mot = m * (9.81 + a);
-                if (y <= 0.001 && Math.abs(v) < 0.01 && t > t_up_total + t_wait) F_mot = 0;
+                let F = m * (9.81 + a);
+                if (y<=0.001 && Math.abs(v)<0.01 && t>t_up+t_pause) F = 0;
+                let I = F / (HARDWARE.elec.f_max / 6.43); if(I<0) I=0;
+                let U = (HARDWARE.elec.r_phase * I) + (HARDWARE.elec.k_emf * v);
+                let P_j = (HARDWARE.elec.r_phase * I**2 * 6)/1000;
+                let P_m = (F*v)/1000;
+                let P_fix = (F>0) ? (HARDWARE.elec.p_fixes/1000) : 0;
+                let P_el = P_m + P_j + P_fix;
 
-                let I_req = F_mot / (HARDWARE.elec.f_max / 6.43);
-                if (I_req < 0) I_req = 0; 
+                let dE = P_el * dt / 3600;
+                let dE_j = P_j * dt / 3600;
+                if(P_el > 0) { data.e_cons_total += dE; cur_cons += dE; }
+                else { data.e_regen_total += Math.abs(dE); cur_regen += Math.abs(dE); }
+                data.e_loss_total += dE_j + (P_fix * dt / 3600);
 
-                let E_bemf = HARDWARE.elec.k_emf * v; 
-                let U_req = (HARDWARE.elec.r_phase * I_req) + E_bemf;
-
-                let P_joule = (HARDWARE.elec.r_phase * I_req**2 * 6) / 1000; 
-                let P_meca = (F_mot * v) / 1000; 
-                let P_fixes = (F_mot > 0) ? (HARDWARE.elec.p_fixes / 1000) : 0; 
-                let P_elec = P_meca + P_joule + P_fixes;
-
-                // Energy
-                let dE = P_elec * dt / 3600; 
-                let dE_joule = P_joule * dt / 3600;
-                
-                if (P_elec > 0) {
-                    data.e_cons_total += dE;
-                    current_e_cons += dE;
-                } else {
-                    data.e_regen_total += Math.abs(dE);
-                    current_e_regen += Math.abs(dE);
-                }
-                data.e_loss_total += dE_joule + (P_fixes * dt / 3600);
-
-                // Store
-                data.t.push(t);
-                data.y.push(y);
-                data.v.push(v);
-                data.a.push(a);
-                data.u.push(U_req);
-                data.i.push(I_req);
-                data.e_cons_cumul.push(current_e_cons);
-                data.e_regen_cumul.push(current_e_regen);
+                data.t.push(t); data.y.push(y); data.v.push(v); data.a.push(a);
+                data.u.push(U); data.i.push(I);
+                data.e_cons_cumul.push(cur_cons); data.e_regen_cumul.push(cur_regen);
 
                 t += dt;
-                if (t > t_max_sim || t > 500) running = false;
+                if (t > t_max || t > 500) running = false;
             }
-
             simState.data = data;
             startVisuals();
         }
 
-        // ==========================================
-        // VISUALISATION & RAPPORT
-        // ==========================================
         function startVisuals() {
             if (animId) cancelAnimationFrame(animId);
-            
             const canvas = document.getElementById('visuCanvas');
             const ctx = canvas.getContext('2d');
             const d = simState.data;
             let idx = 0;
             
-            // Reset Charts
-            charts.kine.data.labels = [];
-            charts.kine.data.datasets.forEach(ds => ds.data = []);
-            charts.elec.data.labels = [];
-            charts.elec.data.datasets.forEach(ds => ds.data = []);
-            charts.nrg.data.labels = [];
-            charts.nrg.data.datasets.forEach(ds => ds.data = []);
-
+            charts.kine.data.labels = []; charts.kine.data.datasets.forEach(ds => ds.data = []);
+            charts.elec.data.labels = []; charts.elec.data.datasets.forEach(ds => ds.data = []);
+            charts.nrg.data.labels = []; charts.nrg.data.datasets.forEach(ds => ds.data = []);
+            
             const max_h = parseFloat(document.getElementById('h_target').value);
 
             function loop() {
-                if (idx >= d.t.length) {
-                    showFinalReport();
-                    return;
-                }
-
-                // Canvas
+                if (idx >= d.t.length) { showFinalReport(); return; }
+                
                 canvas.width = canvas.parentElement.offsetWidth;
                 canvas.height = canvas.parentElement.offsetHeight;
                 
-                const y = d.y[idx];
-                
-                drawSystem(ctx, canvas.width, canvas.height, y, max_h);
+                // Draw Scene (White BG)
+                ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+                // Grid
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1; ctx.beginPath();
+                for(let i=0; i<canvas.width; i+=50) { ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); }
+                for(let i=0; i<canvas.height; i+=50) { ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); }
+                ctx.stroke();
 
-                document.getElementById('disp_y').innerText = y.toFixed(2);
+                const scale = canvas.height / 4;
+                const cx = canvas.width/2; const cy = canvas.height/2;
+                const y_sim = d.y[idx];
+                let cam_y = y_sim;
+                function w2s(wy) { return cy + (cam_y - wy) * scale; }
+
+                // Coils
+                const nb = Math.ceil(max_h / HARDWARE.stator.pas) + 5;
+                for(let i=-2; i<nb; i++) {
+                    const wy = i * HARDWARE.stator.pas; const sy = w2s(wy);
+                    if(sy > -100 && sy < canvas.height+100) {
+                        const dist = Math.abs(wy - y_sim);
+                        let col = '#cbd5e1';
+                        if(dist < (HARDWARE.rotor.hauteur*1.5)) { col = (wy < y_sim) ? '#ef4444' : '#3b82f6'; }
+                        if(dist < 0.1) col = '#facc15';
+                        ctx.fillStyle = col;
+                        const bw = HARDWARE.stator.w_bobine * scale; const bh = HARDWARE.stator.h_bobine * scale; const gap = HARDWARE.stator.ecart * scale;
+                        ctx.fillRect(cx-gap/2-bw, sy-bh/2, bw, bh); ctx.fillRect(cx+gap/2, sy-bh/2, bw, bh);
+                    }
+                }
+
+                // Rotor
+                const theta = (y_sim / HARDWARE.rotor.ratio_rot) * 2 * Math.PI;
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(theta);
+                const s = HARDWARE.rotor.cote * scale; const rc = (HARDWARE.rotor.cote / Math.sqrt(3)) * scale;
+                ctx.beginPath(); ctx.moveTo(0, -rc); ctx.lineTo(s/2, rc/2); ctx.lineTo(-s/2, rc/2); ctx.closePath();
+                const grd = ctx.createLinearGradient(-s/2, -rc, s/2, rc); grd.addColorStop(0, '#60a5fa'); grd.addColorStop(1, '#2563eb');
+                ctx.fillStyle = grd; ctx.fill();
+                ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(0, -rc, s*0.1, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(s/2, rc/2, s*0.1, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(-s/2, rc/2, s*0.1, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = 'white'; ctx.beginPath(); ctx.arc(0, 0, s*0.05, 0, Math.PI*2); ctx.fill();
+                ctx.restore();
+
+                // UI
+                document.getElementById('disp_y').innerText = y_sim.toFixed(2);
                 document.getElementById('disp_v').innerText = d.v[idx].toFixed(2);
                 
+                const isRegen = (idx>0 && d.e_regen_cumul[idx] > d.e_regen_cumul[idx-1]);
                 const regInd = document.getElementById('regenIndicator');
-                const isRegen = (idx > 0 && d.e_regen_cumul[idx] > d.e_regen_cumul[idx-1]);
-                if (isRegen) regInd.classList.remove('hidden');
-                else regInd.classList.add('hidden');
+                if(isRegen) regInd.classList.remove('hidden'); else regInd.classList.add('hidden');
 
-                // Charts Throttling
+                // Charts
                 if (idx % 3 === 0) {
-                    const t_lbl = d.t[idx].toFixed(1);
-                    
-                    charts.kine.data.labels.push(t_lbl);
+                    const l = d.t[idx].toFixed(1);
+                    charts.kine.data.labels.push(l);
                     charts.kine.data.datasets[0].data.push(d.y[idx]);
                     charts.kine.data.datasets[1].data.push(d.v[idx]);
                     charts.kine.data.datasets[2].data.push(d.a[idx]);
                     
-                    charts.elec.data.labels.push(t_lbl);
+                    charts.elec.data.labels.push(l);
                     charts.elec.data.datasets[0].data.push(d.u[idx]);
                     charts.elec.data.datasets[1].data.push(d.i[idx]);
 
-                    charts.nrg.data.labels.push(t_lbl);
+                    charts.nrg.data.labels.push(l);
                     charts.nrg.data.datasets[0].data.push(d.e_cons_cumul[idx]);
                     charts.nrg.data.datasets[1].data.push(d.e_regen_cumul[idx]);
 
-                    charts.kine.update('none');
-                    charts.elec.update('none');
-                    charts.nrg.update('none');
+                    charts.kine.update('none'); charts.elec.update('none'); charts.nrg.update('none');
                 }
-
+                
                 idx++;
                 animId = requestAnimationFrame(loop);
             }
             animId = requestAnimationFrame(loop);
         }
 
-        function drawSystem(ctx, w, h, y_sim, h_target) {
-            // Fond Blanc
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, w, h);
-
-            const scale = h / 4;
-            const cx = w / 2;
-            const cy = h / 2;
-            let cam_y = y_sim;
-            function worldToScreen(wy) { return cy + (cam_y - wy) * scale; }
-
-            // Grid (Gris Clair)
-            ctx.strokeStyle = '#e2e8f0';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            for(let i=0; i<w; i+=50) { ctx.moveTo(i,0); ctx.lineTo(i,h); }
-            for(let i=0; i<h; i+=50) { ctx.moveTo(0,i); ctx.lineTo(w,i); }
-            ctx.stroke();
-
-            // Bobines
-            const nb_coils = Math.ceil(h_target / HARDWARE.stator.pas) + 5;
-            for(let i=-2; i<nb_coils; i++) {
-                const wy = i * HARDWARE.stator.pas;
-                const sy = worldToScreen(wy);
-                if (sy > -100 && sy < h+100) {
-                    const dist = Math.abs(wy - y_sim);
-                    let active = dist < (HARDWARE.rotor.hauteur * 1.5);
-                    
-                    let color = '#cbd5e1'; 
-                    
-                    if (active) {
-                        if (wy < y_sim) {
-                            color = '#ef4444'; // Rouge Poussée
-                        } else {
-                            color = '#3b82f6'; // Bleu Guidage
-                        }
-                    }
-
-                    // Peak center
-                    if (dist < 0.1) color = '#facc15';
-                    
-                    ctx.fillStyle = color;
-                    const bw = HARDWARE.stator.w_bobine * scale;
-                    const bh = HARDWARE.stator.h_bobine * scale;
-                    const gap = HARDWARE.stator.ecart * scale;
-                    ctx.fillRect(cx - gap/2 - bw, sy - bh/2, bw, bh);
-                    ctx.fillRect(cx + gap/2, sy - bh/2, bw, bh);
-                }
-            }
-
-            // Rotor
-            const theta = (y_sim / HARDWARE.rotor.ratio_rot) * 2 * Math.PI;
-            ctx.save();
-            ctx.translate(cx, cy);
-            ctx.rotate(theta);
-            
-            const r_circ = HARDWARE.rotor.cote / Math.sqrt(3);
-            const side = HARDWARE.rotor.cote;
-            const s = side * scale;
-            const rc = r_circ * scale;
-            
-            ctx.beginPath();
-            ctx.moveTo(0, -rc);
-            ctx.lineTo(s/2, rc/2);
-            ctx.lineTo(-s/2, rc/2);
-            ctx.closePath();
-            
-            const grd = ctx.createLinearGradient(-s/2, -rc, s/2, rc);
-            grd.addColorStop(0, '#60a5fa');
-            grd.addColorStop(1, '#2563eb');
-            ctx.fillStyle = grd;
-            ctx.fill();
-            
-            ctx.fillStyle = '#ef4444';
-            ctx.beginPath(); ctx.arc(0, -rc, s*0.1, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(s/2, rc/2, s*0.1, 0, Math.PI*2); ctx.fill();
-            ctx.beginPath(); ctx.arc(-s/2, rc/2, s*0.1, 0, Math.PI*2); ctx.fill();
-
-            ctx.fillStyle = 'white';
-            ctx.beginPath(); ctx.arc(0, 0, s*0.05, 0, Math.PI*2); ctx.fill();
-            ctx.restore();
-        }
-
         function showFinalReport() {
-            const d = simState.data;
-            const last = d.t.length - 1;
-            
-            document.getElementById('rep_t').innerText = d.t[last].toFixed(1) + " s";
+            const d = simState.data; const l = d.t.length-1;
+            document.getElementById('rep_t').innerText = d.t[l].toFixed(1) + " s";
             document.getElementById('rep_h').innerText = Math.max(...d.y).toFixed(1) + " m";
             document.getElementById('rep_v').innerText = Math.max(...d.v).toFixed(1) + " m/s";
             document.getElementById('rep_a').innerText = Math.max(...d.a).toFixed(1) + " m/s²";
-            
             document.getElementById('rep_e_cons').innerText = d.e_cons_total.toFixed(3) + " kWh";
             document.getElementById('rep_e_loss').innerText = d.e_loss_total.toFixed(3) + " kWh";
             document.getElementById('rep_e_regen').innerText = d.e_regen_total.toFixed(3) + " kWh";
-            
-            const pct = (d.e_cons_total > 0) ? (d.e_regen_total / d.e_cons_total * 100) : 0;
+            const pct = (d.e_cons_total>0) ? (d.e_regen_total/d.e_cons_total*100) : 0;
             document.getElementById('rep_pct_regen').innerText = pct.toFixed(1) + " %";
-
-            const eff = (d.e_cons_total > 0) ? (1 - (d.e_loss_total / d.e_cons_total)) * 100 : 0;
+            const eff = (d.e_cons_total>0) ? (1-(d.e_loss_total/d.e_cons_total))*100 : 0;
             document.getElementById('rep_efficacite').innerText = eff.toFixed(1) + " %";
-            
             document.getElementById('rep_u_max').innerText = Math.max(...d.u).toFixed(0) + " V";
-
             document.getElementById('reportModal').classList.remove('hidden');
         }
-
-        function closeReport() {
-            document.getElementById('reportModal').classList.add('hidden');
-        }
-
+        function closeReport() { document.getElementById('reportModal').classList.add('hidden'); }
         window.onload = initCharts;
     </script>
 </body>
