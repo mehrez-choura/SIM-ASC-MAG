@@ -7,6 +7,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for the inner iframe validation tool -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         body { 
             font-family: 'Inter', system-ui, -apple-system, sans-serif; 
@@ -200,8 +203,8 @@
                                 <span class="spec-value">Rotor Passif</span>
                             </div>
                             <div>
-                                <div class="spec-row mb-0"><span class="spec-label">Matériau</span> <span class="spec-value">Acier 42CrMo4</span></div>
-                                <span class="tech-note">Acier allié haute résistance mécanique (Indéformable)</span>
+                                <div class="spec-row mb-0"><span class="spec-label">Matériau</span> <span class="spec-value text-green-400">Acier Feuilleté (Fe-Si)</span></div>
+                                <span class="tech-note text-green-300/70">Tôles empilées : Pertes Foucault négligeables</span>
                             </div>
                             <div>
                                 <div class="spec-row mb-0"><span class="spec-label">Géométrie</span> <span class="spec-value">Triangle Équilatéral</span></div>
@@ -550,6 +553,7 @@
                 }
                 input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
                 input[type=range].accel-range::-webkit-slider-thumb { background: #10b981; }
+                input[type=range].mass-range::-webkit-slider-thumb { background: #d97706; }
 
                 input[type=number] {
                     width: 70px; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;
@@ -590,8 +594,12 @@
                         <h3 class="font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-1">1. Contrôles de Simulation</h3>
                         <ul class="list-disc pl-5 space-y-2">
                             <li>
+                                <strong class="text-amber-600">Charge (Masse) :</strong> 
+                                Influe directement sur la force requise pour vaincre la gravité. Une masse élevée augmente le courant de base, même à l'arrêt.
+                            </li>
+                            <li>
                                 <strong class="text-emerald-600">Consigne Accélération (Couple) :</strong> 
-                                Pilote le courant injecté dans les bobines. Plus l'accélération est forte, plus le champ magnétique B (Tesla) augmente.
+                                Ajoute une force dynamique. Le courant total dépend de la somme (Gravité + Accélération) x Masse.
                                 <br><em class="text-xs text-slate-400">Objectif : Vérifier que le fer ne sature pas (>1.8T) à pleine charge.</em>
                             </li>
                             <li>
@@ -638,8 +646,20 @@
                 </div>
             </div>
             
-            <div class="hud-top-bar">
-                <!-- ... (Reste des contrôles inchangés) ... -->
+            <div class="hud-top-bar" style="min-width: 900px; gap: 2rem;">
+                
+                <!-- NOUVEAU CONTROLE MASSE -->
+                <div class="control-group">
+                    <div class="flex justify-between items-center">
+                        <label class="label-sm text-amber-700">Charge (Masse)</label>
+                        <span class="text-[10px] text-slate-400">kg</span>
+                    </div>
+                    <div class="control-row">
+                        <input type="range" id="input-mass" class="mass-range" min="0" max="5000" step="50" value="2200">
+                        <input type="number" id="num-mass" min="0" max="5000" step="50" value="2200">
+                    </div>
+                </div>
+
                 <div class="control-group">
                     <div class="flex justify-between items-center">
                         <label class="label-sm text-emerald-700">Consigne Accélération</label>
@@ -730,18 +750,21 @@
             </div>
             
             <script>
-                // ... (Script identique à la version précédente avec logique input/slider synchro déjà implémentée) ...
                 const canvas = document.getElementById('simCanvas');
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
                 const SPECS = { accel_comfort: 2.0, accel_limit: 9.81, I_min: 1.0, I_comfort: 6.90, I_limit: 11.46, V_comfort: 15.0, V_max: 25.0, Voltage_Max: 1250, Kv: 1000 / 20 };
                 const CONFIG = { rotor: { side: 0.400, R: 0.400 / Math.sqrt(3), hole: 0.040 }, stator: { faceX: 0.235, legL: 0.25, legW: 0.04, backW: 0.06, coilL: 0.08, coilThick: 0.06 } };
-                let state = { cmdAccel: 0.0, cmdSpeed: 0.0, current: 0.0, voltage: 0.0, realSpeed: 0.0, angle: 0, activePhase: 0, vA: {x:0, y:0}, vB: {x:0, y:0}, vC: {x:0, y:0} };
+                // Ajout de cmdMass par défaut à 2200
+                let state = { cmdAccel: 0.0, cmdSpeed: 0.0, cmdMass: 2200, current: 0.0, voltage: 0.0, realSpeed: 0.0, angle: 0, activePhase: 0, vA: {x:0, y:0}, vB: {x:0, y:0}, vC: {x:0, y:0} };
                 let GRID_RES = 200, scale, cx, cy, pxSize;
                 
                 const elRangeAccel = document.getElementById('input-accel');
                 const elNumAccel = document.getElementById('num-accel');
                 const elRangeSpeed = document.getElementById('input-speed');
                 const elNumSpeed = document.getElementById('num-speed');
+                // Nouveaux éléments DOM pour la masse
+                const elRangeMass = document.getElementById('input-mass');
+                const elNumMass = document.getElementById('num-mass');
 
                 function resize() {
                     canvas.width = window.innerWidth;
@@ -779,26 +802,47 @@
                 function rotate(v, rad) { return { x: v.x*Math.cos(rad) - v.y*Math.sin(rad), y: v.x*Math.sin(rad) + v.y*Math.cos(rad) }; }
                 
                 function updatePhysics() {
-                    let I_req = 0;
-                    if (state.cmdAccel > 0) {
-                        if (state.cmdAccel <= SPECS.accel_comfort) I_req = SPECS.I_min + (state.cmdAccel/SPECS.accel_comfort)*(SPECS.I_comfort - SPECS.I_min);
-                        else I_req = SPECS.I_comfort + ((state.cmdAccel-SPECS.accel_comfort)/(SPECS.accel_limit-SPECS.accel_comfort))*(SPECS.I_limit - SPECS.I_comfort);
-                    }
+                    // Calcul du courant basé sur la masse et l'accélération
+                    // K calibré pour correspondre à ~11.46A pour 2200kg @ 9.81m/s² (1G) + 9.81m/s² (Gravité)
+                    // F_max = 2200 * (9.81 + 9.81) = 43164 N
+                    // I_limit = 11.46 A
+                    // K = 11.46 / 43164 approx 0.0002655
+                    
+                    const K_fi = 0.0002655; 
+                    const gravity = 9.81;
+                    
+                    // Force Totale = Masse * (Gravité + Accélération Commande)
+                    const totalForce = state.cmdMass * (gravity + state.cmdAccel);
+                    
+                    // Courant requis
+                    let I_req = totalForce * K_fi;
+                    
+                    // Dynamique de simulation (lissage)
                     if (state.realSpeed < state.cmdSpeed) {
                         state.current = I_req;
-                        state.realSpeed += (state.cmdAccel * 0.016);
+                        state.realSpeed += (Math.max(0.1, state.cmdAccel) * 0.016); // Accélération minime pour bouger si cmdAccel=0
                     } else {
-                        state.current = Math.max(0, state.current * 0.9);
+                        // Maintien de vitesse (compensation frottements fictifs + gravité)
+                        // Pour validation statique, on garde I_req pour montrer l'effort de maintien
+                        state.current = I_req; 
+                        
                         if(state.realSpeed > state.cmdSpeed) state.realSpeed -= 0.05;
                         if(state.realSpeed < 0) state.realSpeed = 0;
                     }
+                    
                     state.voltage = state.realSpeed * SPECS.Kv;
                     if (state.voltage > SPECS.Voltage_Max) {
                         state.voltage = SPECS.Voltage_Max;
                         state.realSpeed = SPECS.Voltage_Max / SPECS.Kv; 
                     }
+                    
                     const rpmVisual = state.realSpeed * 30; 
                     state.angle += rpmVisual * 0.01;
+                    // Mode statique si vitesse nulle : faire clignoter les bobines lentement ou fixer une phase
+                    if(state.realSpeed < 0.1) {
+                         state.angle += 0.5; // Rotation très lente pour visualiser le champ statique
+                    }
+
                     const seq = Math.floor(state.angle / 40) % 3;
                     state.activePhase = [2, 1, 0][seq];
                     const rad = state.angle * Math.PI / 180;
@@ -930,7 +974,7 @@
                         } else {
                             ctx.save();
                             ctx.translate(L, 0); 
-                            ctx.rotate(angle);   
+                            ctx.rotate(angle);    
                             ctx.beginPath(); ctx.rect(-L, -W/2, L, W); ctx.stroke();
                             const cxLoc = -L * 0.8; 
                             drawCoil(cxLoc, -W/2, L, W, idx, true);
@@ -1025,12 +1069,27 @@
                     elRangeSpeed.value = val;
                     elNumSpeed.value = val;
                 }
+                // Nouvelle fonction updateMass
+                function updateMass(v) {
+                    let val = parseFloat(v);
+                    if(isNaN(val)) val = 0;
+                    if(val > 5000) val = 5000;
+                    if(val < 0) val = 0;
+
+                    state.cmdMass = val;
+                    elRangeMass.value = val;
+                    elNumMass.value = val;
+                }
 
                 elRangeAccel.addEventListener('input', (e) => updateAccel(e.target.value));
                 elNumAccel.addEventListener('input', (e) => updateAccel(e.target.value));
                 
                 elRangeSpeed.addEventListener('input', (e) => updateSpeed(e.target.value));
                 elNumSpeed.addEventListener('input', (e) => updateSpeed(e.target.value));
+
+                // Listeners pour la masse
+                elRangeMass.addEventListener('input', (e) => updateMass(e.target.value));
+                elNumMass.addEventListener('input', (e) => updateMass(e.target.value));
 
                 resize();
                 loop();
@@ -1040,14 +1099,13 @@
     </template>
 
     <script>
-        // ... (Reste du code principal inchangé) ...
         // ==========================================
         // CONFIGURATION HARDWARE
         // ==========================================
         const HARDWARE = {
             rotor: { cote: 0.400, hauteur: 0.400 * Math.sqrt(3) / 2, ratio_rot: 1.2 },
             stator: { h_bobine: 0.300, w_bobine: 0.170, pas: 0.375, ecart: 0.404 },
-            elec: { f_max: 39240, r_phase: 5.87, k_emf: 45, p_fixes: 2320, i_nom: 5.73 }
+            elec: { f_max: 39240, r_phase: 5.87, k_emf: 45, p_fixes: 280, i_nom: 5.73 }
         };
         let simState = { running: false, data: {}, missionType: 'up' };
         let charts = {};
@@ -1166,8 +1224,17 @@
 
         function downloadReportImage() {
             if (!simState.data.t || simState.data.t.length === 0) {
-                alert("Aucun rapport disponible. Veuillez lancer une simulation.");
-                return;
+                 const statusBox = document.getElementById('statusBox');
+                 statusBox.className = "mt-3 p-2 text-center text-xs font-bold rounded bg-red-900/50 text-red-300 border border-red-500/50";
+                 statusBox.innerHTML = "⚠️ Veuillez lancer une simulation avant de télécharger.";
+                 statusBox.classList.remove('hidden');
+                 // Auto-hide after 3 seconds
+                 setTimeout(() => {
+                    if(statusBox.innerHTML.includes("Veuillez lancer")) {
+                        statusBox.classList.add('hidden');
+                    }
+                 }, 3000);
+                 return;
             }
             const canvas = document.createElement('canvas');
             canvas.width = 600;
