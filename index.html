@@ -111,12 +111,18 @@
             </h1>
         </div>
         
-        <!-- CHANGEMENT: Ajout du bouton d'aide à droite -->
-        <div class="flex items-center gap-6">
-            <div class="text-right hidden sm:block">
+        <div class="flex items-center gap-4">
+            <div class="text-right hidden sm:block mr-2">
                 <div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">État du Système</div>
                 <div class="text-xs font-mono text-blue-300 font-bold">PRÊT À SIMULER</div>
             </div>
+            
+            <!-- NOUVEAU : Bouton Validation Magnétique -->
+            <button onclick="openMagVal()" class="bg-indigo-600 hover:bg-indigo-500 text-white p-2 px-3 rounded-lg border border-indigo-400/30 transition shadow-lg flex items-center gap-2" title="Validation Magnétique">
+                <span>🧲</span> <span class="text-xs font-bold hidden md:inline">Validation Magnétique</span>
+            </button>
+
+            <!-- Bouton Aide -->
             <button onclick="openHelpModal()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-white p-2 rounded-lg border border-slate-700 transition shadow-lg group relative" title="Guide d'utilisation">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="absolute top-0 right-0 -mt-1 -mr-1 flex h-3 w-3">
@@ -326,7 +332,7 @@
                 <canvas id="visuCanvas" class="w-full h-full block"></canvas>
             </div>
 
-            <!-- BOTTOM: Rapport Permanent (Fixed height or % base) -->
+            <!-- BOTTOM: Rapport Permanent -->
             <div id="reportContainer" class="h-72 bg-slate-50 border-t border-slate-200 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20 relative">
                 
                 <div class="p-3 border-b border-slate-200 flex justify-between items-center bg-white">
@@ -395,7 +401,7 @@
 
     </div>
 
-    <!-- Modal Validation (Warning only now) -->
+    <!-- Modal Validation -->
     <div id="validationModal" class="fixed inset-0 modal z-[60] hidden flex items-center justify-center p-4">
         <div id="valModalContent" class="bg-slate-800 border-2 rounded-xl max-w-md w-full shadow-2xl overflow-hidden transform transition-all scale-100 relative">
             <div id="valHeader" class="p-4 border-b flex justify-between items-center bg-yellow-900/30 border-yellow-600/50">
@@ -411,10 +417,9 @@
         </div>
     </div>
 
-    <!-- CHANGEMENT: Modal Guide d'Utilisation -->
+    <!-- Modal Guide d'Utilisation -->
     <div id="helpModal" class="fixed inset-0 modal z-[70] hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border-2 border-slate-600 rounded-xl max-w-2xl w-full shadow-2xl overflow-hidden transform transition-all scale-100 relative">
-            
             <div class="bg-slate-900 p-5 border-b border-slate-700 flex justify-between items-center">
                 <h2 class="text-xl font-bold text-blue-400 flex items-center gap-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -424,10 +429,8 @@
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            
             <div class="p-6 overflow-y-auto max-h-[70vh]">
                 <div class="space-y-6">
-                    
                     <div class="flex gap-4">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">1</div>
                         <div>
@@ -442,7 +445,6 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="flex gap-4">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">2</div>
                         <div>
@@ -457,7 +459,6 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="flex gap-4">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">3</div>
                         <div>
@@ -472,7 +473,6 @@
                             </p>
                         </div>
                     </div>
-
                     <div class="flex gap-4">
                         <div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold">4</div>
                         <div>
@@ -486,21 +486,463 @@
                             </p>
                         </div>
                     </div>
-
                 </div>
             </div>
-            
             <div class="bg-slate-900 p-4 border-t border-slate-700 text-right">
                 <button onclick="closeHelpModal()" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold transition">J'ai compris</button>
             </div>
         </div>
     </div>
 
+    <!-- NOUVEAU: Modal Validation Magnétique (Plein écran avec Iframe) -->
+    <div id="magValModal" class="fixed inset-0 z-[80] hidden bg-slate-900">
+        <button onclick="closeMagVal()" class="absolute top-6 right-6 text-white z-50 hover:text-red-400 bg-black/50 p-2 rounded-full transition">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        <iframe id="magValFrame" class="w-full h-full border-none"></iframe>
+    </div>
+
+    <!-- Template pour le code de Validation Magnétique -->
+    <template id="magValTemplate">
+        <!DOCTYPE html>
+        <html lang="fr">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>M-LEV: Validation Magnétique</title>
+            <script src="https://cdn.tailwindcss.com"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <style>
+                body { 
+                    font-family: 'Segoe UI', system-ui, sans-serif; 
+                    background-color: #f8fafc; 
+                    color: #1e293b; 
+                    margin: 0; 
+                    overflow: hidden;
+                }
+                canvas { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+                .hud-top-bar {
+                    position: absolute;
+                    top: 90px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(255, 255, 255, 0.9);
+                    backdrop-filter: blur(12px);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 1rem 2rem;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+                    display: flex;
+                    gap: 2rem;
+                    align-items: center;
+                    z-index: 20;
+                    min-width: 700px;
+                }
+                .hud-bottom-panel {
+                    position: absolute;
+                    bottom: 30px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(255, 255, 255, 0.95);
+                    backdrop-filter: blur(12px);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 16px;
+                    padding: 1.5rem;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+                    display: flex;
+                    gap: 2.5rem;
+                    align-items: center;
+                }
+                input[type=range] { -webkit-appearance: none; width: 100%; height: 100%; background: transparent; position: absolute; top:0; left:0; z-index: 20; cursor: pointer;}
+                input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; opacity: 0; cursor: pointer; }
+                .slider-wrapper { position: relative; width: 220px; }
+                .slider-track { position: relative; width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
+                .thumb-visual {
+                    position: absolute; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px;
+                    background: white; border-radius: 50%; pointer-events: none; z-index: 10;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: left 0.05s ease-out;
+                    border: 4px solid #3b82f6;
+                }
+                .coil-led { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block; margin-right: 6px; border: 1px solid #94a3b8; transition: all 0.2s; }
+                .coil-active { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; border-color: #d97706; transform: scale(1.1); }
+                .label-sm { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+                .val-lg { font-family: 'Courier New', monospace; font-weight: 800; font-size: 1.25rem; color: #0f172a; }
+            </style>
+        </head>
+        <body class="relative">
+            <canvas id="simCanvas"></canvas>
+            <div class="absolute top-6 w-full text-center pointer-events-none z-10">
+                <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center justify-center gap-3">
+                    <span class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-lg shadow-blue-200"><i class="fa-solid fa-check"></i></span>
+                    VALIDATION MAGNÉTIQUE
+                </h1>
+                <div class="text-xs text-slate-500 font-medium mt-1 uppercase tracking-widest">
+                    Rapport de Saturation & Performance
+                </div>
+            </div>
+            <div class="hud-top-bar">
+                <div class="slider-wrapper">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="label-sm">Couple (Accélération)</span>
+                        <span id="val-accel" class="text-sm font-bold text-slate-800 font-mono">0.0 m/s²</span>
+                    </div>
+                    <div class="slider-track">
+                        <div class="absolute inset-y-0 left-0 w-[20%] bg-emerald-500"></div>
+                        <div class="absolute inset-y-0 left-[20%] right-0 bg-rose-500"></div>
+                        <input type="range" id="input-accel" min="0" max="10" step="0.1" value="0">
+                        <div id="thumb-accel" class="thumb-visual" style="left: 0%; border-color: #10b981;"></div>
+                    </div>
+                </div>
+                <div class="slider-wrapper">
+                    <div class="flex justify-between items-end mb-1">
+                        <span class="label-sm">Consigne Vitesse</span>
+                        <span id="val-speed" class="text-sm font-bold text-slate-800 font-mono">0.0 m/s</span>
+                    </div>
+                    <div class="slider-track">
+                        <div class="absolute inset-y-0 left-0 w-[60%] bg-blue-500"></div>
+                        <div class="absolute inset-y-0 left-[60%] right-0 bg-amber-500"></div>
+                        <input type="range" id="input-speed" min="0" max="25" step="0.5" value="0">
+                        <div id="thumb-speed" class="thumb-visual border-blue-600" style="left: 0%"></div>
+                    </div>
+                </div>
+                <div class="border-l border-slate-200 pl-8 ml-4">
+                    <div class="label-sm mb-2">Séquence Bobines</div>
+                    <div class="flex gap-6 text-xs text-slate-600 font-semibold">
+                        <div class="flex items-center"><span id="led-top" class="coil-led"></span> A (Haut)</div>
+                        <div class="flex items-center"><span id="led-mid" class="coil-led"></span> B (Milieu)</div>
+                        <div class="flex items-center"><span id="led-bot" class="coil-led"></span> C (Bas)</div>
+                    </div>
+                </div>
+            </div>
+            <div class="hud-bottom-panel">
+                <div class="text-center w-24">
+                    <div class="label-sm mb-1">Courant</div>
+                    <div class="val-lg text-orange-600" id="disp-current">0.0</div>
+                    <div class="text-[10px] text-slate-400 font-bold">Ampères</div>
+                </div>
+                <div class="w-px h-10 bg-slate-200"></div>
+                <div class="text-center w-24 relative">
+                    <div class="label-sm mb-1">Tension</div>
+                    <div class="val-lg text-amber-600" id="disp-voltage">0</div>
+                    <div class="text-[10px] text-slate-400 font-bold">Volts (FCEM)</div>
+                    <div id="warn-volt" class="hidden absolute -top-3 -right-2 bg-red-100 text-red-600 border border-red-200 px-1.5 py-0.5 rounded text-[9px] font-bold">MAX</div>
+                </div>
+                <div class="w-px h-10 bg-slate-200"></div>
+                <div class="text-center w-24">
+                    <div class="label-sm mb-1">Vitesse</div>
+                    <div class="val-lg text-slate-800" id="disp-real-speed">0.0</div>
+                    <div class="text-[10px] text-slate-400 font-bold">m/s</div>
+                </div>
+                <div class="w-px h-10 bg-slate-200"></div>
+                <div class="w-48 bg-slate-50 rounded-xl p-3 border border-slate-200 shadow-inner">
+                    <div class="flex justify-between items-end mb-1">
+                        <div class="label-sm text-slate-500">Flux (Tesla)</div>
+                        <div class="val-lg text-blue-600 leading-none" id="disp-b">0.00</div>
+                    </div>
+                    <div class="w-full h-2 bg-slate-200 mt-1 rounded-full overflow-hidden flex relative">
+                        <div id="bar-sat" class="h-full bg-gradient-to-r from-blue-500 via-emerald-400 to-rose-500 w-0 transition-all duration-100"></div>
+                        <div class="absolute top-0 bottom-0 w-0.5 bg-slate-800 opacity-20" style="left: 90%"></div>
+                    </div>
+                    <div class="flex justify-between w-full text-[9px] text-slate-400 mt-1 font-medium">
+                        <span>0T</span>
+                        <span class="text-rose-500 font-bold">1.8T</span>
+                        <span>2.0T</span>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-40 right-10 bg-white/90 p-4 rounded-xl border border-slate-200 shadow-xl backdrop-blur-sm">
+                <div class="label-sm mb-3 border-b border-slate-100 pb-2">CARTE THERMIQUE</div>
+                <div class="flex flex-col gap-2 text-[10px] text-slate-600 font-medium">
+                    <div class="flex items-center justify-between gap-4">
+                        <span>Zone Froide</span>
+                        <div class="flex items-center gap-2"><div class="w-12 h-2 rounded bg-gradient-to-r from-blue-600 to-cyan-400"></div> <span class="w-8 text-right">0.5T</span></div>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span>Conduction</span>
+                        <div class="flex items-center gap-2"><div class="w-12 h-2 rounded bg-gradient-to-r from-cyan-400 to-yellow-400"></div> <span class="w-8 text-right">1.2T</span></div>
+                    </div>
+                    <div class="flex items-center justify-between gap-4">
+                        <span class="text-rose-500 font-bold">SATURATION</span>
+                        <div class="flex items-center gap-2"><div class="w-12 h-2 rounded bg-gradient-to-r from-yellow-400 to-rose-600 shadow-sm"></div> <span class="w-8 text-right text-rose-600 font-bold">1.8T</span></div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                const canvas = document.getElementById('simCanvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                const SPECS = { accel_comfort: 2.0, accel_limit: 9.81, I_min: 1.0, I_comfort: 6.90, I_limit: 11.46, V_comfort: 15.0, V_max: 20.0, Voltage_Max: 1000, Kv: 1000 / 20 };
+                const CONFIG = { rotor: { side: 0.400, R: 0.400 / Math.sqrt(3), hole: 0.040 }, stator: { faceX: 0.235, legL: 0.25, legW: 0.04, backW: 0.06, coilL: 0.08, coilThick: 0.06 } };
+                let state = { cmdAccel: 0.0, cmdSpeed: 0.0, current: 0.0, voltage: 0.0, realSpeed: 0.0, angle: 0, activePhase: 0, vA: {x:0, y:0}, vB: {x:0, y:0}, vC: {x:0, y:0} };
+                let GRID_RES = 200, scale, cx, cy, pxSize;
+                function resize() {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                    const minDim = Math.min(canvas.width, canvas.height);
+                    scale = minDim / 1.1; 
+                    cx = canvas.width / 2;
+                    cy = canvas.height / 2;
+                    GRID_RES = Math.min(300, Math.ceil(canvas.width / 2.5));
+                    pxSize = Math.ceil(canvas.width / GRID_RES);
+                }
+                window.addEventListener('resize', resize);
+                function dot2(v) { return v.x*v.x + v.y*v.y; }
+                function sub(v1, v2) { return {x: v1.x-v2.x, y: v1.y-v2.y}; }
+                function add(v1, v2) { return {x: v1.x+v2.x, y: v1.y+v2.y}; }
+                function mul(v, s) { return {x: v.x*s, y: v.y*s}; }
+                function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+                function sdTriangleExact(p, a, b, c) {
+                    const ba = sub(b, a); const pa = sub(p, a);
+                    const cb = sub(c, b); const pb = sub(p, b);
+                    const ac = sub(a, c); const pc = sub(p, c);
+                    const d1 = dot2( sub(mul(ba, clamp((pa.x*ba.x+pa.y*ba.y)/dot2(ba),0.0,1.0)), pa) );
+                    const d2 = dot2( sub(mul(cb, clamp((pb.x*cb.x+pb.y*cb.y)/dot2(cb),0.0,1.0)), pb) );
+                    const d3 = dot2( sub(mul(ac, clamp((pc.x*ac.x+pc.y*ac.y)/dot2(ac),0.0,1.0)), pc) );
+                    const minD = Math.sqrt( Math.min(Math.min(d1, d2), d3) );
+                    const s1 = Math.sign((b.x - a.x) * (p.y - a.y) - (b.y - a.y) * (p.x - a.x));
+                    const s2 = Math.sign((c.x - b.x) * (p.y - b.y) - (c.y - b.y) * (p.x - b.x));
+                    const s3 = Math.sign((a.x - c.x) * (p.y - c.y) - (a.y - c.y) * (p.x - c.x));
+                    const inside = (s1 == s2 && s2 == s3);
+                    return inside ? -minD : minD;
+                }
+                function sdCircle(p, r) { return Math.sqrt(p.x*p.x + p.y*p.y) - r; }
+                function rotate(v, rad) { return { x: v.x*Math.cos(rad) - v.y*Math.sin(rad), y: v.x*Math.sin(rad) + v.y*Math.cos(rad) }; }
+                function updatePhysics() {
+                    let I_req = 0;
+                    if (state.cmdAccel > 0) {
+                        if (state.cmdAccel <= SPECS.accel_comfort) I_req = SPECS.I_min + (state.cmdAccel/SPECS.accel_comfort)*(SPECS.I_comfort - SPECS.I_min);
+                        else I_req = SPECS.I_comfort + ((state.cmdAccel-SPECS.accel_comfort)/(SPECS.accel_limit-SPECS.accel_comfort))*(SPECS.I_limit - SPECS.I_comfort);
+                    }
+                    if (state.realSpeed < state.cmdSpeed) {
+                        state.current = I_req;
+                        state.realSpeed += (state.cmdAccel * 0.016);
+                    } else {
+                        state.current = Math.max(0, state.current * 0.9);
+                        if(state.realSpeed > state.cmdSpeed) state.realSpeed -= 0.05;
+                    }
+                    state.voltage = state.realSpeed * SPECS.Kv;
+                    if (state.voltage > SPECS.Voltage_Max) {
+                        state.voltage = SPECS.Voltage_Max;
+                        state.realSpeed = SPECS.Voltage_Max / SPECS.Kv; 
+                    }
+                    const rpmVisual = state.realSpeed * 30; 
+                    state.angle += rpmVisual * 0.01;
+                    const seq = Math.floor(state.angle / 40) % 3;
+                    state.activePhase = [2, 1, 0][seq];
+                    const rad = state.angle * Math.PI / 180;
+                    const R = CONFIG.rotor.R;
+                    const side = CONFIG.rotor.side;
+                    state.vA = rotate({x: 0, y: R}, rad);
+                    state.vB = rotate({x: side/2, y: -R/2}, rad);
+                    state.vC = rotate({x: -side/2, y: -R/2}, rad);
+                }
+                function calculateField(mx, my) {
+                    const p = {x: mx, y: my};
+                    const dTri = sdTriangleExact(p, state.vA, state.vB, state.vC);
+                    const dHole = sdCircle(p, CONFIG.rotor.hole);
+                    const dRotor = Math.max(dTri, -dHole);
+                    let B = 0;
+                    let matID = 0; 
+                    let activeY = 0;
+                    if(state.activePhase === 0) activeY = 0.2; 
+                    else if(state.activePhase === 1) activeY = 0; 
+                    else activeY = -0.2; 
+                    const dSourceR = Math.sqrt((mx - CONFIG.stator.faceX)**2 + (my - activeY)**2);
+                    const dSourceL = Math.sqrt((mx - (-CONFIG.stator.faceX))**2 + (my - activeY)**2);
+                    const dFluxSource = Math.min(dSourceR, dSourceL);
+                    if (dRotor < 0) {
+                        matID = 1;
+                        if (state.current > 0) {
+                            const hotspot = Math.exp(-dFluxSource * 8); 
+                            const body = 0.2;
+                            B = state.current * (0.25 * hotspot + 0.05 * body);
+                            const distCenter = Math.sqrt(mx*mx + my*my);
+                            if (distCenter > CONFIG.rotor.R * 0.8) { B *= 1.2; }
+                        }
+                    }
+                    if (B > 2.2) B = 2.2;
+                    return { B, matID };
+                }
+                function getHeatmapColor(t) {
+                    let r=0, g=0, b=0;
+                    if (t < 0.2) { b = 255; g = Math.floor((t / 0.2) * 200); r = 50; } 
+                    else if (t < 0.5) { g = 200; b = Math.floor(255 - ((t - 0.2) / 0.3) * 255); r = 50;} 
+                    else if (t < 0.8) { g = 200; r = Math.floor(50 + ((t - 0.5) / 0.3) * 205); b = 0; } 
+                    else { r = 255; g = Math.floor(200 - ((t - 0.8) / 0.2) * 200); b = 0; } 
+                    return `rgb(${r},${g},${b})`;
+                }
+                function loop() {
+                    updatePhysics();
+                    ctx.fillStyle = "#ffffff"; 
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.strokeStyle = "#f1f5f9";
+                    ctx.lineWidth = 1;
+                    const stepGrid = 50;
+                    ctx.beginPath();
+                    for(let x=0; x<canvas.width; x+=stepGrid) { ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); }
+                    for(let y=0; y<canvas.height; y+=stepGrid) { ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); }
+                    ctx.stroke();
+                    const w = canvas.width, h = canvas.height;
+                    const step = w / GRID_RES;
+                    let maxB_frame = 0;
+                    for(let py = 0; py < h; py += step) {
+                        for(let px = 0; px < w; px += step) {
+                            const mx = (px - cx) / scale;
+                            const my = -(py - cy) / scale; 
+                            const f = calculateField(mx, my);
+                            if (f.matID === 1 && f.B > maxB_frame) maxB_frame = f.B;
+                            if (f.matID === 1) { 
+                                let t = f.B / 2.0;
+                                if(t > 1) t = 1;
+                                if (t < 0.05) ctx.fillStyle = "#e2e8f0"; 
+                                else ctx.fillStyle = getHeatmapColor(t);
+                                ctx.fillRect(px, py, step+1, step+1);
+                            }
+                        }
+                    }
+                    drawOverlays();
+                    updateUI(maxB_frame);
+                    requestAnimationFrame(loop);
+                }
+                function drawOverlays() {
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    ctx.scale(scale, -scale); 
+                    ctx.lineWidth = 0.004;
+                    ctx.strokeStyle = "#1e293b"; 
+                    ctx.beginPath();
+                    ctx.moveTo(state.vA.x, state.vA.y);
+                    ctx.lineTo(state.vB.x, state.vB.y);
+                    ctx.lineTo(state.vC.x, state.vC.y);
+                    ctx.closePath();
+                    ctx.stroke();
+                    ctx.fillStyle = "#fff";
+                    ctx.beginPath(); ctx.arc(0, 0, CONFIG.rotor.hole, 0, Math.PI*2); 
+                    ctx.fill(); ctx.stroke();
+                    drawStatorUnit(ctx, CONFIG.stator.faceX, 0, false, state.activePhase);
+                    drawStatorUnit(ctx, -CONFIG.stator.faceX, 0, true, state.activePhase);
+                    ctx.restore();
+                }
+                function drawStatorUnit(ctx, faceX, faceY, isLeftStator, phase) {
+                    ctx.save();
+                    ctx.translate(faceX, faceY);
+                    const dir = isLeftStator ? -1 : 1; 
+                    ctx.scale(dir, 1); 
+                    const L = CONFIG.stator.legL;
+                    const W = CONFIG.stator.legW;
+                    const backW = CONFIG.stator.backW;
+                    const coilL = CONFIG.stator.coilL;
+                    ctx.strokeStyle = "#334155";
+                    ctx.lineWidth = 0.004;
+                    ctx.lineJoin = "round";
+                    ctx.beginPath();
+                    ctx.moveTo(L, 0.25);
+                    ctx.lineTo(L + backW, 0.25);
+                    ctx.lineTo(L + backW, -0.25);
+                    ctx.lineTo(L, -0.25);
+                    ctx.stroke();
+                    const connPoint = { x: L + backW + 0.08, y: 0 };
+                    const coilCenters = [];
+                    function drawLeg(angle, idx) {
+                        let coilCenterWorld = {x:0, y:0};
+                        if (angle === 0) {
+                            ctx.beginPath(); ctx.rect(0, -W/2, L, W); ctx.stroke();
+                            const cx = L * 0.2; 
+                            drawCoil(cx, -W/2, L, W, idx);
+                            coilCenterWorld = {x: cx + coilL/2, y: 0};
+                        } else {
+                            ctx.save();
+                            ctx.translate(L, 0); 
+                            ctx.rotate(angle);   
+                            ctx.beginPath(); ctx.rect(-L, -W/2, L, W); ctx.stroke();
+                            const cxLoc = -L * 0.8; 
+                            drawCoil(cxLoc, -W/2, L, W, idx, true);
+                            const bx = cxLoc + coilL/2;
+                            const by = 0;
+                            const xRot = bx * Math.cos(angle);
+                            const yRot = bx * Math.sin(angle);
+                            coilCenterWorld = { x: L + xRot, y: yRot };
+                            ctx.restore();
+                        }
+                        coilCenters.push(coilCenterWorld);
+                    }
+                    function drawCoil(x, y, l, w, idx, rotated=false) {
+                        const isActive = (idx === phase) && (state.current > 0.5);
+                        ctx.fillStyle = isActive ? "#f59e0b" : "#92400e"; 
+                        ctx.shadowColor = "#f59e0b";
+                        ctx.shadowBlur = isActive ? 15 : 0;
+                        const cThick = CONFIG.stator.coilThick;
+                        const cLen = CONFIG.stator.coilL;
+                        const cx = x; 
+                        const cy = -cThick/2;
+                        if(!isActive) {
+                            ctx.shadowColor = "rgba(0,0,0,0.2)";
+                            ctx.shadowBlur = 2;
+                        }
+                        ctx.fillRect(cx, cy, cLen, cThick);
+                        ctx.strokeStyle = "rgba(255,255,255,0.4)"; 
+                        ctx.lineWidth = 0.001;
+                        ctx.strokeRect(cx, cy, cLen, cThick);
+                        ctx.shadowBlur = 0;
+                    }
+                    drawLeg(Math.PI/3, 0);  // Haut
+                    drawLeg(0, 1);          // Centre
+                    drawLeg(-Math.PI/3, 2); // Bas
+                    ctx.lineWidth = 0.003;
+                    ctx.strokeStyle = "#d97706";
+                    ctx.lineCap = "round";
+                    ctx.beginPath();
+                    coilCenters.forEach(pt => {
+                        ctx.moveTo(pt.x, pt.y);
+                        ctx.lineTo(connPoint.x, connPoint.y);
+                    });
+                    ctx.stroke();
+                    ctx.fillStyle = "#d97706";
+                    ctx.beginPath();
+                    ctx.arc(connPoint.x, connPoint.y, 0.012, 0, Math.PI*2);
+                    ctx.fill();
+                    ctx.restore();
+                }
+                function updateUI(maxB) {
+                    document.getElementById('disp-current').innerText = state.current.toFixed(1);
+                    document.getElementById('disp-voltage').innerText = state.voltage.toFixed(0);
+                    const dSpeed = document.getElementById('disp-real-speed');
+                    if(dSpeed) dSpeed.innerText = state.realSpeed.toFixed(1);
+                    const bVal = document.getElementById('disp-b');
+                    bVal.innerText = maxB.toFixed(2);
+                    const satBar = document.getElementById('bar-sat');
+                    const pct = Math.min(100, (maxB / 2.0) * 100);
+                    satBar.style.width = pct + "%";
+                    if (maxB > 1.8) bVal.classList.replace('text-blue-600', 'text-rose-600');
+                    else bVal.classList.replace('text-rose-600', 'text-blue-600');
+                    const leds = ['led-top', 'led-mid', 'led-bot'];
+                    leds.forEach((id, idx) => {
+                        const el = document.getElementById(id);
+                        if (idx === state.activePhase && state.current > 0.5) el.classList.add('coil-active');
+                        else el.classList.remove('coil-active');
+                    });
+                }
+                document.getElementById('input-accel').addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    state.cmdAccel = v;
+                    document.getElementById('val-accel').innerText = v.toFixed(1) + ' m/s²';
+                    document.getElementById('thumb-accel').style.left = (v/10)*100 + "%";
+                });
+                document.getElementById('input-speed').addEventListener('input', (e) => {
+                    const v = parseFloat(e.target.value);
+                    state.cmdSpeed = v;
+                    document.getElementById('val-speed').innerText = v.toFixed(1) + ' m/s';
+                    document.getElementById('thumb-speed').style.left = (v/25)*100 + "%";
+                });
+                resize();
+                loop();
+            </script>
+        </body>
+        </html>
+    </template>
+
     <script>
-        // ... (Code JS inchangé sauf ajouts pour le HelpModal) ...
-        // ==========================================
-        // CONFIGURATION HARDWARE
-        // ==========================================
+        // CONFIG & STATE ...
+        // (Reste du code identique aux versions précédentes)
         const HARDWARE = {
             rotor: { cote: 0.400, hauteur: 0.400 * Math.sqrt(3) / 2, ratio_rot: 1.2 },
             stator: { h_bobine: 0.300, w_bobine: 0.170, pas: 0.375, ecart: 0.404 },
@@ -510,7 +952,7 @@
         let charts = {};
         let animId;
 
-        // UI & CHARTS SETUP ...
+        // UI Functions
         function setMission(type) {
             simState.missionType = type;
             document.getElementById('mission_type').value = type;
@@ -527,6 +969,26 @@
                 btnUpDown.className = "flex-1 py-1.5 text-xs font-bold rounded-md bg-red-600 text-white shadow-md transition-all duration-200";
                 pauseContainer.classList.remove('hidden');
             }
+        }
+
+        // --- MAG VALIDATION MODAL LOGIC ---
+        function openMagVal() {
+            const modal = document.getElementById('magValModal');
+            const iframe = document.getElementById('magValFrame');
+            const template = document.getElementById('magValTemplate').innerHTML;
+            
+            // Inject content into iframe
+            iframe.srcdoc = template;
+            modal.classList.remove('hidden');
+        }
+
+        function closeMagVal() {
+            const modal = document.getElementById('magValModal');
+            const iframe = document.getElementById('magValFrame');
+            
+            // Clear content to stop simulation loop and save resources
+            iframe.srcdoc = ""; 
+            modal.classList.add('hidden');
         }
 
         function initCharts() {
@@ -568,7 +1030,6 @@
             });
         }
 
-        // --- DOWNLOAD UTILS ---
         function downloadGraph(canvasId, filename) {
             const sourceCanvas = document.getElementById(canvasId);
             const m = document.getElementById('m_tot').value;
@@ -603,29 +1064,21 @@
         }
 
         function downloadReportImage() {
-            const reportContent = document.getElementById('reportContent');
             if (!simState.data.t || simState.data.t.length === 0) {
                 alert("Aucun rapport disponible. Veuillez lancer une simulation.");
                 return;
             }
-
             const canvas = document.createElement('canvas');
             canvas.width = 600;
             canvas.height = 400;
             const ctx = canvas.getContext('2d');
-
-            // BG
-            ctx.fillStyle = '#f8fafc'; // slate-50
+            ctx.fillStyle = '#f8fafc'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Header
-            ctx.fillStyle = '#1e293b'; // slate-900
+            ctx.fillStyle = '#1e293b'; 
             ctx.fillRect(0, 0, canvas.width, 60);
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 20px Inter, sans-serif';
             ctx.fillText('RAPPORT DE CYCLE M-LEV', 20, 38);
-
-            // Data extraction logic similar to showFinalReport
             const d = simState.data; const l = d.t.length-1;
             const time = d.t[l].toFixed(1) + " s";
             const h_max = Math.max(...d.y).toFixed(1) + " m";
@@ -634,36 +1087,27 @@
             const e_regen = d.e_regen_total.toFixed(3) + " kWh";
             const eff = (d.e_cons_total>0) ? (1-(d.e_loss_total/d.e_cons_total))*100 : 0;
             
-            // Draw content
             ctx.fillStyle = '#334155';
             ctx.font = '14px Inter, sans-serif';
-            
             let y = 100;
             const x1 = 40;
             const x2 = 300;
-
-            // Col 1
             ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillText('PERFORMANCE', x1, y); y+=25;
             ctx.font = '14px Inter, sans-serif';
             ctx.fillText(`Temps Total: ${time}`, x1, y); y+=25;
             ctx.fillText(`Hauteur Max: ${h_max}`, x1, y); y+=25;
             ctx.fillText(`Vitesse Pic: ${v_max}`, x1, y); y+=40;
-
-            // Col 2
             y = 100;
             ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillText('ÉNERGIE', x2, y); y+=25;
             ctx.font = '14px Inter, sans-serif';
             ctx.fillText(`Conso Totale: ${e_cons}`, x2, y); y+=25;
-            ctx.fillStyle = '#16a34a'; // Green
+            ctx.fillStyle = '#16a34a'; 
             ctx.fillText(`Régénération: ${e_regen}`, x2, y); y+=25;
-            ctx.fillStyle = '#2563eb'; // Blue
+            ctx.fillStyle = '#2563eb'; 
             ctx.fillText(`Rendement: ${eff.toFixed(1)} %`, x2, y);
-
-            // Footer
             ctx.fillStyle = '#94a3b8';
             ctx.font = 'italic 12px sans-serif';
             ctx.fillText(`Simulation générée le ${new Date().toLocaleString()}`, 20, 380);
-
             const link = document.createElement('a');
             link.download = `M-LEV_Rapport_Cycle.png`;
             link.href = canvas.toDataURL('image/png');
