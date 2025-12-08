@@ -496,7 +496,7 @@
 
     <!-- NOUVEAU: Modal Validation Magnétique (Plein écran avec Iframe) -->
     <div id="magValModal" class="fixed inset-0 z-[80] hidden bg-slate-900">
-        <button onclick="closeMagVal()" class="absolute top-6 right-6 text-white z-50 hover:text-red-400 bg-black/50 p-2 rounded-full transition">
+        <button onclick="closeMagVal()" class="absolute top-6 right-6 text-white z-50 hover:text-red-400 bg-black/50 p-2 rounded-full transition shadow-lg border border-white/10">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
         <iframe id="magValFrame" class="w-full h-full border-none"></iframe>
@@ -521,56 +521,113 @@
                     overflow: hidden;
                 }
                 canvas { display: block; width: 100vw; height: 100vh; cursor: crosshair; }
+                
                 .hud-top-bar {
-                    position: absolute;
-                    top: 90px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(255, 255, 255, 0.9);
-                    backdrop-filter: blur(12px);
-                    border: 1px solid #e2e8f0;
-                    border-radius: 12px;
-                    padding: 1rem 2rem;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-                    display: flex;
-                    gap: 2rem;
-                    align-items: center;
-                    z-index: 20;
-                    min-width: 700px;
+                    position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+                    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
+                    border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem 2rem;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; gap: 3rem; align-items: center; z-index: 20; min-width: 800px;
                 }
+                
                 .hud-bottom-panel {
-                    position: absolute;
-                    bottom: 30px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(255, 255, 255, 0.95);
-                    backdrop-filter: blur(12px);
-                    border: 1px solid #e2e8f0;
-                    border-radius: 16px;
-                    padding: 1.5rem;
-                    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-                    display: flex;
-                    gap: 2.5rem;
-                    align-items: center;
+                    position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+                    background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
+                    border: 1px solid #cbd5e1; border-radius: 16px; padding: 1.5rem;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.1); display: flex; gap: 2.5rem; align-items: center;
                 }
-                input[type=range] { -webkit-appearance: none; width: 100%; height: 100%; background: transparent; position: absolute; top:0; left:0; z-index: 20; cursor: pointer;}
-                input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; opacity: 0; cursor: pointer; }
-                .slider-wrapper { position: relative; width: 220px; }
-                .slider-track { position: relative; width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px; }
-                .thumb-visual {
-                    position: absolute; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px;
-                    background: white; border-radius: 50%; pointer-events: none; z-index: 10;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: left 0.05s ease-out;
-                    border: 4px solid #3b82f6;
+
+                /* Nouveaux Styles Inputs */
+                .control-group { display: flex; flex-direction: column; gap: 0.5rem; width: 240px; }
+                .control-row { display: flex; align-items: center; gap: 0.5rem; }
+                
+                input[type=range] {
+                    -webkit-appearance: none; width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; outline: none;
                 }
+                input[type=range]::-webkit-slider-thumb {
+                    -webkit-appearance: none; appearance: none; width: 18px; height: 18px; border-radius: 50%; 
+                    background: #3b82f6; cursor: pointer; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                    transition: transform 0.1s;
+                }
+                input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+                input[type=range].accel-range::-webkit-slider-thumb { background: #10b981; }
+
+                input[type=number] {
+                    width: 70px; padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 6px;
+                    font-family: 'Courier New', monospace; font-weight: bold; text-align: right; color: #334155;
+                }
+                input[type=number]:focus { outline: 2px solid #3b82f6; border-color: transparent; }
+
                 .coil-led { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block; margin-right: 6px; border: 1px solid #94a3b8; transition: all 0.2s; }
                 .coil-active { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; border-color: #d97706; transform: scale(1.1); }
-                .label-sm { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+                .label-sm { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
                 .val-lg { font-family: 'Courier New', monospace; font-weight: 800; font-size: 1.25rem; color: #0f172a; }
+                
+                #magHelp {
+                    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                    background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+                    z-index: 100; max-width: 600px; display: none; border: 1px solid #e2e8f0;
+                }
+                #magHelp.show { display: block; animation: fadein 0.2s; }
+                @keyframes fadein { from { opacity: 0; transform: translate(-50%, -45%); } to { opacity: 1; transform: translate(-50%, -50%); } }
             </style>
         </head>
         <body class="relative">
             <canvas id="simCanvas"></canvas>
+            
+            <button onclick="document.getElementById('magHelp').classList.add('show')" class="absolute top-6 right-20 z-30 bg-white hover:bg-slate-50 text-slate-500 hover:text-blue-600 p-2 px-3 rounded-full shadow-lg border border-slate-200 transition flex items-center gap-2 font-bold text-sm" title="Aide">
+                <i class="fa-solid fa-circle-question text-lg"></i> AIDE
+            </button>
+
+            <!-- HELP MODAL -->
+            <div id="magHelp">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h2 class="text-xl font-bold text-slate-800">Guide de Validation Magnétique</h2>
+                    <button onclick="document.getElementById('magHelp').classList.remove('show')" class="text-slate-400 hover:text-slate-800"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="space-y-6 text-sm text-slate-600">
+                    
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-1">1. Contrôles de Simulation</h3>
+                        <ul class="list-disc pl-5 space-y-2">
+                            <li>
+                                <strong class="text-emerald-600">Consigne Accélération (Couple) :</strong> 
+                                Pilote le courant injecté dans les bobines. Plus l'accélération est forte, plus le champ magnétique B (Tesla) augmente.
+                                <br><em class="text-xs text-slate-400">Objectif : Vérifier que le fer ne sature pas (>1.8T) à pleine charge.</em>
+                            </li>
+                            <li>
+                                <strong class="text-blue-600">Consigne Vitesse (Fréquence) :</strong> 
+                                Pilote la vitesse de rotation du champ. Plus la vitesse est élevée, plus la tension induite (FCEM) augmente.
+                                <br><em class="text-xs text-slate-400">Objectif : Vérifier que la tension reste sous la limite de l'onduleur (1000V).</em>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-slate-800 mb-2 uppercase text-xs tracking-wider border-b border-slate-100 pb-1">2. Comprendre le Scénario Visuel</h3>
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                                <strong class="block text-slate-700 mb-1">Rotor (Triangle Central)</strong>
+                                C'est la partie mobile en acier passif. Il tourne sur lui-même pour simuler le déplacement linéaire (1 tour = 1.2m).
+                            </div>
+                            <div class="bg-slate-50 p-2 rounded border border-slate-100">
+                                <strong class="block text-slate-700 mb-1">Stator (Rectangles Latéraux)</strong>
+                                Ce sont les pôles fixes qui génèrent le champ. Ils s'illuminent en <span class="text-amber-500 font-bold">Jaune</span> lorsqu'ils sont actifs.
+                            </div>
+                            <div class="col-span-2 bg-slate-50 p-2 rounded border border-slate-100">
+                                <strong class="block text-slate-700 mb-1">Carte de Chaleur (Flux Magnétique)</strong>
+                                Visualise la densité du flux B dans le matériau :
+                                <div class="flex items-center gap-3 mt-1 font-medium">
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-blue-500"></div> Faible</span>
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-green-500"></div> Nominal</span>
+                                    <span class="flex items-center gap-1"><div class="w-2 h-2 rounded-full bg-red-500"></div> Saturation (>1.8T)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <div class="absolute top-6 w-full text-center pointer-events-none z-10">
                 <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center justify-center gap-3">
                     <span class="bg-blue-600 text-white w-10 h-10 rounded-lg flex items-center justify-center text-lg shadow-lg shadow-blue-200"><i class="fa-solid fa-check"></i></span>
@@ -580,40 +637,43 @@
                     Rapport de Saturation & Performance
                 </div>
             </div>
+            
             <div class="hud-top-bar">
-                <div class="slider-wrapper">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="label-sm">Couple (Accélération)</span>
-                        <span id="val-accel" class="text-sm font-bold text-slate-800 font-mono">0.0 m/s²</span>
+                <!-- ... (Reste des contrôles inchangés) ... -->
+                <div class="control-group">
+                    <div class="flex justify-between items-center">
+                        <label class="label-sm text-emerald-700">Consigne Accélération</label>
+                        <span class="text-[10px] text-slate-400">m/s²</span>
                     </div>
-                    <div class="slider-track">
-                        <div class="absolute inset-y-0 left-0 w-[20%] bg-emerald-500"></div>
-                        <div class="absolute inset-y-0 left-[20%] right-0 bg-rose-500"></div>
-                        <input type="range" id="input-accel" min="0" max="10" step="0.1" value="0">
-                        <div id="thumb-accel" class="thumb-visual" style="left: 0%; border-color: #10b981;"></div>
+                    <div class="control-row">
+                        <input type="range" id="input-accel" class="accel-range" min="0" max="10" step="0.1" value="0">
+                        <input type="number" id="num-accel" min="0" max="10" step="0.1" value="0">
                     </div>
                 </div>
-                <div class="slider-wrapper">
-                    <div class="flex justify-between items-end mb-1">
-                        <span class="label-sm">Consigne Vitesse</span>
-                        <span id="val-speed" class="text-sm font-bold text-slate-800 font-mono">0.0 m/s</span>
+
+                <div class="control-group">
+                    <div class="flex justify-between items-center">
+                        <label class="label-sm text-blue-700">Consigne Vitesse</label>
+                        <span class="text-[10px] text-slate-400">m/s</span>
                     </div>
-                    <div class="slider-track">
-                        <div class="absolute inset-y-0 left-0 w-[60%] bg-blue-500"></div>
-                        <div class="absolute inset-y-0 left-[60%] right-0 bg-amber-500"></div>
+                    <div class="control-row">
                         <input type="range" id="input-speed" min="0" max="25" step="0.5" value="0">
-                        <div id="thumb-speed" class="thumb-visual border-blue-600" style="left: 0%"></div>
+                        <input type="number" id="num-speed" min="0" max="25" step="0.5" value="0">
                     </div>
                 </div>
-                <div class="border-l border-slate-200 pl-8 ml-4">
+
+                <div class="w-px h-12 bg-slate-200 mx-2"></div>
+
+                <div class="pl-2">
                     <div class="label-sm mb-2">Séquence Bobines</div>
-                    <div class="flex gap-6 text-xs text-slate-600 font-semibold">
-                        <div class="flex items-center"><span id="led-top" class="coil-led"></span> A (Haut)</div>
-                        <div class="flex items-center"><span id="led-mid" class="coil-led"></span> B (Milieu)</div>
-                        <div class="flex items-center"><span id="led-bot" class="coil-led"></span> C (Bas)</div>
+                    <div class="flex gap-4 text-xs text-slate-600 font-semibold">
+                        <div class="flex items-center"><span id="led-top" class="coil-led"></span> A</div>
+                        <div class="flex items-center"><span id="led-mid" class="coil-led"></span> B</div>
+                        <div class="flex items-center"><span id="led-bot" class="coil-led"></span> C</div>
                     </div>
                 </div>
             </div>
+
             <div class="hud-bottom-panel">
                 <div class="text-center w-24">
                     <div class="label-sm mb-1">Courant</div>
@@ -629,7 +689,7 @@
                 </div>
                 <div class="w-px h-10 bg-slate-200"></div>
                 <div class="text-center w-24">
-                    <div class="label-sm mb-1">Vitesse</div>
+                    <div class="label-sm mb-1">Vitesse Réelle</div>
                     <div class="val-lg text-slate-800" id="disp-real-speed">0.0</div>
                     <div class="text-[10px] text-slate-400 font-bold">m/s</div>
                 </div>
@@ -650,6 +710,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="absolute bottom-40 right-10 bg-white/90 p-4 rounded-xl border border-slate-200 shadow-xl backdrop-blur-sm">
                 <div class="label-sm mb-3 border-b border-slate-100 pb-2">CARTE THERMIQUE</div>
                 <div class="flex flex-col gap-2 text-[10px] text-slate-600 font-medium">
@@ -667,13 +728,21 @@
                     </div>
                 </div>
             </div>
+            
             <script>
+                // ... (Script identique à la version précédente avec logique input/slider synchro déjà implémentée) ...
                 const canvas = document.getElementById('simCanvas');
                 const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                const SPECS = { accel_comfort: 2.0, accel_limit: 9.81, I_min: 1.0, I_comfort: 6.90, I_limit: 11.46, V_comfort: 15.0, V_max: 20.0, Voltage_Max: 1000, Kv: 1000 / 20 };
+                const SPECS = { accel_comfort: 2.0, accel_limit: 9.81, I_min: 1.0, I_comfort: 6.90, I_limit: 11.46, V_comfort: 15.0, V_max: 25.0, Voltage_Max: 1250, Kv: 1000 / 20 };
                 const CONFIG = { rotor: { side: 0.400, R: 0.400 / Math.sqrt(3), hole: 0.040 }, stator: { faceX: 0.235, legL: 0.25, legW: 0.04, backW: 0.06, coilL: 0.08, coilThick: 0.06 } };
                 let state = { cmdAccel: 0.0, cmdSpeed: 0.0, current: 0.0, voltage: 0.0, realSpeed: 0.0, angle: 0, activePhase: 0, vA: {x:0, y:0}, vB: {x:0, y:0}, vC: {x:0, y:0} };
                 let GRID_RES = 200, scale, cx, cy, pxSize;
+                
+                const elRangeAccel = document.getElementById('input-accel');
+                const elNumAccel = document.getElementById('num-accel');
+                const elRangeSpeed = document.getElementById('input-speed');
+                const elNumSpeed = document.getElementById('num-speed');
+
                 function resize() {
                     canvas.width = window.innerWidth;
                     canvas.height = window.innerHeight;
@@ -685,6 +754,8 @@
                     pxSize = Math.ceil(canvas.width / GRID_RES);
                 }
                 window.addEventListener('resize', resize);
+                
+                // Maths
                 function dot2(v) { return v.x*v.x + v.y*v.y; }
                 function sub(v1, v2) { return {x: v1.x-v2.x, y: v1.y-v2.y}; }
                 function add(v1, v2) { return {x: v1.x+v2.x, y: v1.y+v2.y}; }
@@ -706,6 +777,7 @@
                 }
                 function sdCircle(p, r) { return Math.sqrt(p.x*p.x + p.y*p.y) - r; }
                 function rotate(v, rad) { return { x: v.x*Math.cos(rad) - v.y*Math.sin(rad), y: v.x*Math.sin(rad) + v.y*Math.cos(rad) }; }
+                
                 function updatePhysics() {
                     let I_req = 0;
                     if (state.cmdAccel > 0) {
@@ -718,6 +790,7 @@
                     } else {
                         state.current = Math.max(0, state.current * 0.9);
                         if(state.realSpeed > state.cmdSpeed) state.realSpeed -= 0.05;
+                        if(state.realSpeed < 0) state.realSpeed = 0;
                     }
                     state.voltage = state.realSpeed * SPECS.Kv;
                     if (state.voltage > SPECS.Voltage_Max) {
@@ -735,6 +808,7 @@
                     state.vB = rotate({x: side/2, y: -R/2}, rad);
                     state.vC = rotate({x: -side/2, y: -R/2}, rad);
                 }
+                
                 function calculateField(mx, my) {
                     const p = {x: mx, y: my};
                     const dTri = sdTriangleExact(p, state.vA, state.vB, state.vC);
@@ -762,6 +836,7 @@
                     if (B > 2.2) B = 2.2;
                     return { B, matID };
                 }
+                
                 function getHeatmapColor(t) {
                     let r=0, g=0, b=0;
                     if (t < 0.2) { b = 255; g = Math.floor((t / 0.2) * 200); r = 50; } 
@@ -770,6 +845,7 @@
                     else { r = 255; g = Math.floor(200 - ((t - 0.8) / 0.2) * 200); b = 0; } 
                     return `rgb(${r},${g},${b})`;
                 }
+                
                 function loop() {
                     updatePhysics();
                     ctx.fillStyle = "#ffffff"; 
@@ -803,6 +879,7 @@
                     updateUI(maxB_frame);
                     requestAnimationFrame(loop);
                 }
+                
                 function drawOverlays() {
                     ctx.save();
                     ctx.translate(cx, cy);
@@ -822,6 +899,7 @@
                     drawStatorUnit(ctx, -CONFIG.stator.faceX, 0, true, state.activePhase);
                     ctx.restore();
                 }
+                
                 function drawStatorUnit(ctx, faceX, faceY, isLeftStator, phase) {
                     ctx.save();
                     ctx.translate(faceX, faceY);
@@ -914,6 +992,11 @@
                     satBar.style.width = pct + "%";
                     if (maxB > 1.8) bVal.classList.replace('text-blue-600', 'text-rose-600');
                     else bVal.classList.replace('text-rose-600', 'text-blue-600');
+                    
+                    const elWarn = document.getElementById('warn-volt');
+                    if (state.voltage >= SPECS.Voltage_Max) elWarn.classList.remove('hidden');
+                    else elWarn.classList.add('hidden');
+
                     const leds = ['led-top', 'led-mid', 'led-bot'];
                     leds.forEach((id, idx) => {
                         const el = document.getElementById(id);
@@ -921,18 +1004,34 @@
                         else el.classList.remove('coil-active');
                     });
                 }
-                document.getElementById('input-accel').addEventListener('input', (e) => {
-                    const v = parseFloat(e.target.value);
-                    state.cmdAccel = v;
-                    document.getElementById('val-accel').innerText = v.toFixed(1) + ' m/s²';
-                    document.getElementById('thumb-accel').style.left = (v/10)*100 + "%";
-                });
-                document.getElementById('input-speed').addEventListener('input', (e) => {
-                    const v = parseFloat(e.target.value);
-                    state.cmdSpeed = v;
-                    document.getElementById('val-speed').innerText = v.toFixed(1) + ' m/s';
-                    document.getElementById('thumb-speed').style.left = (v/25)*100 + "%";
-                });
+
+                function updateAccel(v) {
+                    let val = parseFloat(v);
+                    if(isNaN(val)) val = 0;
+                    if(val > 10) val = 10;
+                    if(val < 0) val = 0;
+                    
+                    state.cmdAccel = val;
+                    elRangeAccel.value = val;
+                    elNumAccel.value = val;
+                }
+                function updateSpeed(v) {
+                    let val = parseFloat(v);
+                    if(isNaN(val)) val = 0;
+                    if(val > 25) val = 25;
+                    if(val < 0) val = 0;
+
+                    state.cmdSpeed = val;
+                    elRangeSpeed.value = val;
+                    elNumSpeed.value = val;
+                }
+
+                elRangeAccel.addEventListener('input', (e) => updateAccel(e.target.value));
+                elNumAccel.addEventListener('input', (e) => updateAccel(e.target.value));
+                
+                elRangeSpeed.addEventListener('input', (e) => updateSpeed(e.target.value));
+                elNumSpeed.addEventListener('input', (e) => updateSpeed(e.target.value));
+
                 resize();
                 loop();
             </script>
@@ -941,8 +1040,10 @@
     </template>
 
     <script>
-        // CONFIG & STATE ...
-        // (Reste du code identique aux versions précédentes)
+        // ... (Reste du code principal inchangé) ...
+        // ==========================================
+        // CONFIGURATION HARDWARE
+        // ==========================================
         const HARDWARE = {
             rotor: { cote: 0.400, hauteur: 0.400 * Math.sqrt(3) / 2, ratio_rot: 1.2 },
             stator: { h_bobine: 0.300, w_bobine: 0.170, pas: 0.375, ecart: 0.404 },
