@@ -528,8 +528,8 @@
                 .hud-top-bar {
                     position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
                     background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
-                    border: 1px solid #cbd5e1; border-radius: 12px; padding: 1rem 2rem;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; gap: 3rem; align-items: center; z-index: 20; min-width: 800px;
+                    border: 1px solid #cbd5e1; border-radius: 12px; padding: 0.75rem 1.5rem;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; gap: 2rem; align-items: center; z-index: 20; min-width: 850px;
                 }
                 
                 .hud-bottom-panel {
@@ -561,7 +561,7 @@
                 }
                 input[type=number]:focus { outline: 2px solid #3b82f6; border-color: transparent; }
 
-                .coil-led { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block; margin-right: 6px; border: 1px solid #94a3b8; transition: all 0.2s; }
+                .coil-led { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; display: inline-block; border: 1px solid #94a3b8; transition: all 0.2s; }
                 .coil-active { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; border-color: #d97706; transform: scale(1.1); }
                 .label-sm { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
                 .val-lg { font-family: 'Courier New', monospace; font-weight: 800; font-size: 1.25rem; color: #0f172a; }
@@ -684,12 +684,30 @@
 
                 <div class="w-px h-12 bg-slate-200 mx-2"></div>
 
-                <div class="pl-2">
-                    <div class="label-sm mb-2">Séquence Bobines</div>
-                    <div class="flex gap-4 text-xs text-slate-600 font-semibold">
-                        <div class="flex items-center"><span id="led-top" class="coil-led"></span> A</div>
-                        <div class="flex items-center"><span id="led-mid" class="coil-led"></span> B</div>
-                        <div class="flex items-center"><span id="led-bot" class="coil-led"></span> C</div>
+                <div class="pl-2 border-l border-slate-200">
+                    <div class="label-sm mb-2 text-center text-slate-500">Séquence Bobines</div>
+                    <div class="flex gap-6">
+                        <!-- Gauche -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-[9px] text-slate-400 font-bold mb-1">GAUCHE</div>
+                            <div class="flex gap-2">
+                                <div class="flex flex-col items-center"><span id="led-l-a" class="coil-led mb-0.5"></span><span class="text-[9px] text-slate-500 font-mono">A</span></div>
+                                <div class="flex flex-col items-center"><span id="led-l-b" class="coil-led mb-0.5"></span><span class="text-[9px] text-slate-500 font-mono">B</span></div>
+                                <div class="flex flex-col items-center"><span id="led-l-c" class="coil-led mb-0.5"></span><span class="text-[9px] text-slate-500 font-mono">C</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="w-px bg-slate-100 h-8 mt-4"></div>
+
+                        <!-- Droite -->
+                        <div class="flex flex-col items-center">
+                            <div class="text-[9px] text-slate-400 font-bold mb-1">DROITE</div>
+                            <div class="flex gap-2">
+                                <div class="flex flex-col items-center"><span id="led-r-a" class="coil-led mb-0.5"></span><span class="text-[9px] text-slate-500 font-mono">A</span></div>
+                                <div class="flex flex-col items-center"><span id="led-r-b" class="coil-led mb-0.5"></span><span class="text-[9px] text-slate-500 font-mono">B</span></div>
+                                <div class="flex flex-col items-center"><span id="led-r-c" class="coil-led mb-0.5"></span><span class="text-[9px] text-slate-500 font-mono">C</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -939,8 +957,14 @@
                     ctx.fillStyle = "#fff";
                     ctx.beginPath(); ctx.arc(0, 0, CONFIG.rotor.hole, 0, Math.PI*2); 
                     ctx.fill(); ctx.stroke();
+                    
+                    // Stator DROIT (Phase normale)
                     drawStatorUnit(ctx, CONFIG.stator.faceX, 0, false, state.activePhase);
-                    drawStatorUnit(ctx, -CONFIG.stator.faceX, 0, true, state.activePhase);
+                    
+                    // Stator GAUCHE (Phase décalée : Si Droite=A(0), Gauche=C(2))
+                    const leftPhase = (state.activePhase + 2) % 3;
+                    drawStatorUnit(ctx, -CONFIG.stator.faceX, 0, true, leftPhase);
+                    
                     ctx.restore();
                 }
                 
@@ -1041,10 +1065,23 @@
                     if (state.voltage >= SPECS.Voltage_Max) elWarn.classList.remove('hidden');
                     else elWarn.classList.add('hidden');
 
-                    const leds = ['led-top', 'led-mid', 'led-bot'];
-                    leds.forEach((id, idx) => {
+                    const hasCurrent = state.current > 0.5;
+                    
+                    // Mise à jour LEDs Droite (Phase normale)
+                    const ledsRight = ['led-r-a', 'led-r-b', 'led-r-c'];
+                    ledsRight.forEach((id, idx) => {
                         const el = document.getElementById(id);
-                        if (idx === state.activePhase && state.current > 0.5) el.classList.add('coil-active');
+                        if (idx === state.activePhase && hasCurrent) el.classList.add('coil-active');
+                        else el.classList.remove('coil-active');
+                    });
+
+                    // Mise à jour LEDs Gauche (Phase opposée/décalée)
+                    // Si Droite=A(0) => Gauche=C(2)
+                    const leftPhase = (state.activePhase + 2) % 3;
+                    const ledsLeft = ['led-l-a', 'led-l-b', 'led-l-c'];
+                    ledsLeft.forEach((id, idx) => {
+                        const el = document.getElementById(id);
+                        if (idx === leftPhase && hasCurrent) el.classList.add('coil-active');
                         else el.classList.remove('coil-active');
                     });
                 }
